@@ -128,7 +128,8 @@ namespace FixPluginTypesSerialization.Patchers
             if (ModifiedPathsToOriginalPaths.TryGetValue(potentialModifiedPath, out var originalData))
             {
                 var assemblyString = (AssemblyString*)originalData.Item1;
-                assemblyString->data = originalData.Item2;
+                var originalString = originalData.Item2;
+                assemblyString->data = originalString;
             }
         }
     }
