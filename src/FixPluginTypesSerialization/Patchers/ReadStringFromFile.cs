@@ -66,7 +66,6 @@ namespace FixPluginTypesSerialization.Patchers
             if (_detourReadStringFromFile != null && _detourReadStringFromFile.IsApplied)
             {
                 _detourReadStringFromFile.Dispose();
-                _monoDetour.Dispose();
             }
 
             if (_monoDetour != null && _monoDetour.IsApplied)
