@@ -50,7 +50,7 @@ namespace FixPluginTypesSerialization.Patchers
                     extra = s->extra,
                     label = s->label,
                     size = s->size,
-                    data = Marshal.StringToHGlobalAnsi(s->IsValid() ? Marshal.PtrToStringAnsi(s->data, (int)s->size) : null)
+                    data = s->data
                 };
 
                 managedAssemblyList.Add(newAssemblyString);
