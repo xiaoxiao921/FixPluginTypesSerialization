@@ -72,6 +72,12 @@ namespace FixPluginTypesSerialization.Patchers
             {
                 _monoDetour.Dispose();
             }
+
+            // Free the allocated paths from FixAbsolutePath
+            foreach (var (allocatedPath, _) in ModifiedPathsToOriginalPaths)
+            {
+                Marshal.FreeHGlobal(allocatedPath);
+            }
         }
 
         private static unsafe void FixAbsolutePath(ref AssemblyString* pathName)
