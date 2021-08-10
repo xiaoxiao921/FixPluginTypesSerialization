@@ -13,6 +13,8 @@ namespace FixPluginTypesSerialization.Patchers
 
         private static IsAssemblyCreatedDelegate original;
 
+        private static NativeDetour _detour;
+
         protected override BytePattern[] Patterns { get; } =
         {
             "E8 ? ? ? ? 84 C0 74 43 45 84 FF"
@@ -23,10 +25,15 @@ namespace FixPluginTypesSerialization.Patchers
             var hookPtr =
                 Marshal.GetFunctionPointerForDelegate(new IsAssemblyCreatedDelegate(OnIsAssemblyCreated));
 
-            var det = new NativeDetour(from, hookPtr, new NativeDetourConfig {ManualApply = true});
+            _detour = new NativeDetour(from, hookPtr, new NativeDetourConfig {ManualApply = true});
 
-            original = det.GenerateTrampoline<IsAssemblyCreatedDelegate>();
-            det.Apply();
+            original = _detour.GenerateTrampoline<IsAssemblyCreatedDelegate>();
+            _detour.Apply();
+        }
+
+        internal static void Dispose()
+        {
+            _detour.Dispose();
         }
 
         private static unsafe bool OnIsAssemblyCreated(MonoManager* _this, int index)

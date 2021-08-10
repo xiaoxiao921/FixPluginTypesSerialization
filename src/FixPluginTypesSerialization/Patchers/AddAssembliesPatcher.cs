@@ -15,6 +15,8 @@ namespace FixPluginTypesSerialization.Patchers
 
         private static AwakeFromLoadDelegate original;
 
+        private static NativeDetour _detour;
+
         protected override BytePattern[] Patterns { get; } =
         {
             "40 53 48 81 EC ? ? ? ? 33 C0 C7 44 24 ? ? ? ? ? 0F 57 C0"
@@ -25,10 +27,15 @@ namespace FixPluginTypesSerialization.Patchers
             var hookPtr =
                 Marshal.GetFunctionPointerForDelegate(new AwakeFromLoadDelegate(OnAwakeFromLoad));
 
-            var det = new NativeDetour(from, hookPtr, new NativeDetourConfig { ManualApply = true });
+            _detour = new NativeDetour(from, hookPtr, new NativeDetourConfig { ManualApply = true });
 
-            original = det.GenerateTrampoline<AwakeFromLoadDelegate>();
-            det.Apply();
+            original = _detour.GenerateTrampoline<AwakeFromLoadDelegate>();
+            _detour.Apply();
+        }
+
+        internal static void Dispose()
+        {
+            _detour.Dispose();
         }
 
         private static unsafe List<AssemblyString> CopyExistingAssemblyList(ref AssemblyList nativeAssemblyList)
@@ -113,10 +120,9 @@ namespace FixPluginTypesSerialization.Patchers
 
             original(_this, awakeMode);
 
-            // Dispose the ReadFromFile detour as we don't need it anymore
+            // Dispose the ReadStringFromFile detour as we don't need it anymore
             // and could hog resources for nothing otherwise
-            if (ReadFromFilePatcher.Detour != null && ReadFromFilePatcher.Detour.IsApplied)
-                ReadFromFilePatcher.Detour.Dispose();
+            ReadStringFromFile.Dispose();
         }
     }
 }
