@@ -52,11 +52,11 @@ namespace FixPluginTypesSerialization
 
             var addAssembliesPatcher = new AddAssembliesPatcher();
             var isAssemblyCreatedPatcher = new IsAssemblyCreatedPatcher();
-            var readFromFilePatcher = new ReadFromFilePatcher();
+            var readStringFromFile = new ReadStringFromFile();
 
             addAssembliesPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize);
             isAssemblyCreatedPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize);
-            readFromFilePatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize);
+            readStringFromFile.Patch(proc.BaseAddress, proc.ModuleMemorySize);
         }
     }
 }
