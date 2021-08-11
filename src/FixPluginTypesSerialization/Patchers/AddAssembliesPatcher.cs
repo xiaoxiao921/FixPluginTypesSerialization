@@ -112,6 +112,8 @@ namespace FixPluginTypesSerialization.Patchers
         {
             var managedAssemblyList = CopyExistingAssemblyList(ref _this->m_AssemblyNames);
 
+            IsAssemblyCreatedPatcher.VanillaAssemblyCount = managedAssemblyList.Count;
+
             AddOurAssemblies(managedAssemblyList, FixPluginTypesSerializationPatcher.PluginPaths);
 
             NewNativeAssemblyList(ref _this->m_AssemblyNames, managedAssemblyList);

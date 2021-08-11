@@ -20,6 +20,8 @@ namespace FixPluginTypesSerialization.Patchers
             "E8 ? ? ? ? 84 C0 74 43 45 84 FF"
         };
 
+        internal static int VanillaAssemblyCount;
+
         protected override unsafe void Apply(IntPtr from)
         {
             var hookPtr =
@@ -38,9 +40,7 @@ namespace FixPluginTypesSerialization.Patchers
 
         private static unsafe bool OnIsAssemblyCreated(MonoManager* _this, int index)
         {
-            // Todo : Don't hardcode this
-            const int vanillaAssemblyCount = 84;
-            if (index >= vanillaAssemblyCount)
+            if (index >= VanillaAssemblyCount)
             {
                 return true;
             }
