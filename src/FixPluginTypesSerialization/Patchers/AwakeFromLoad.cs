@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using FixPluginTypesSerialization.UnityPlayer.Structs;
 using FixPluginTypesSerialization.Util;
 using MonoMod.RuntimeDetour;
 
 namespace FixPluginTypesSerialization.Patchers
 {
-    internal unsafe class AddAssembliesPatcher : Patcher
+    internal unsafe class AwakeFromLoad : Patcher
     {
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private delegate void AwakeFromLoadDelegate(MonoManager* _this, int awakeMode);
@@ -19,7 +20,7 @@ namespace FixPluginTypesSerialization.Patchers
 
         protected override BytePattern[] Patterns { get; } =
         {
-            "40 53 48 81 EC ? ? ? ? 33 C0 C7 44 24 ? ? ? ? ? 0F 57 C0"
+            Encoding.ASCII.GetBytes(nameof(MonoManager) + "::" + nameof(AwakeFromLoad))
         };
 
         protected override unsafe void Apply(IntPtr from)
@@ -112,7 +113,7 @@ namespace FixPluginTypesSerialization.Patchers
         {
             var managedAssemblyList = CopyExistingAssemblyList(ref _this->m_AssemblyNames);
 
-            IsAssemblyCreatedPatcher.VanillaAssemblyCount = managedAssemblyList.Count;
+            IsAssemblyCreated.VanillaAssemblyCount = managedAssemblyList.Count;
 
             AddOurAssemblies(managedAssemblyList, FixPluginTypesSerializationPatcher.PluginPaths);
 

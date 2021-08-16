@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace FixPluginTypesSerialization.Util
 {
@@ -13,11 +14,22 @@ namespace FixPluginTypesSerialization.Util
             CreateJumpTable();
         }
 
+        public BytePattern(byte[] bytes)
+        {
+            pattern = bytes.Cast<byte?>().ToArray();
+            CreateJumpTable();
+        }
+
         public int Length => pattern.Length;
 
         public bool IsE8 => pattern[0] == 0xE8;
 
         public static implicit operator BytePattern(string pattern)
+        {
+            return new BytePattern(pattern);
+        }
+
+        public static implicit operator BytePattern(byte[] pattern)
         {
             return new BytePattern(pattern);
         }
@@ -42,10 +54,10 @@ namespace FixPluginTypesSerialization.Util
                 }
         }
 
-        public unsafe int Match(IntPtr start, int maxSize)
+        public unsafe long Match(IntPtr start, long maxSize)
         {
             var ptr = (byte*) start.ToPointer();
-            for (int j = 0, k = 0; j < maxSize;)
+            for (long j = 0, k = 0; j < maxSize;)
                 if (pattern[k] == null || ptr[j] == pattern[k])
                 {
                     j++;
@@ -61,7 +73,7 @@ namespace FixPluginTypesSerialization.Util
                     k++;
                 }
 
-            return -1;
+            return 0;
         }
     }
 }

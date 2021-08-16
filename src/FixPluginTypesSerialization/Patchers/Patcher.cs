@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using BepInEx.Configuration;
 using FixPluginTypesSerialization.Util;
 
 namespace FixPluginTypesSerialization.Patchers
@@ -7,6 +8,28 @@ namespace FixPluginTypesSerialization.Patchers
     internal abstract class Patcher
     {
         protected abstract BytePattern[] Patterns { get; }
+
+        public void Patch(IntPtr unityModule, MiniPdbReader pdbReader, ConfigEntry<string> functionOffsetCache)
+        {
+            IntPtr functionOffset;
+
+            if (pdbReader.UseCache)
+            {
+                functionOffset = new IntPtr(Convert.ToInt64(functionOffsetCache.Value, 16));
+            }
+            else
+            {
+                functionOffset = pdbReader.FindFunctionOffset(Patterns);
+                if (functionOffset == IntPtr.Zero)
+                    return;
+
+                functionOffsetCache.Value = functionOffset.ToString("X");
+            }
+
+            functionOffset = (IntPtr)(unityModule.ToInt64() + functionOffset.ToInt64());
+
+            Apply(functionOffset);
+        }
 
         public void Patch(IntPtr unityModule, int moduleSize)
         {
@@ -17,7 +40,7 @@ namespace FixPluginTypesSerialization.Patchers
             Apply(match);
         }
 
-        private unsafe IntPtr FindMatch(IntPtr start, int maxSize)
+        private unsafe IntPtr FindMatch(IntPtr start, long maxSize)
         {
             var match = Patterns.Select(p => new { p, res = p.Match(start, maxSize) })
                 .FirstOrDefault(m => m.res >= 0);

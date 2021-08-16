@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using FixPluginTypesSerialization.UnityPlayer.Structs;
 using FixPluginTypesSerialization.Util;
 using MonoMod.RuntimeDetour;
@@ -29,7 +30,7 @@ namespace FixPluginTypesSerialization.Patchers
 
         protected override BytePattern[] Patterns { get; } =
         {
-            "E8 ? ? ? ? 48 8B 4D B7 0F B6 F0"
+            Encoding.ASCII.GetBytes(nameof(ReadStringFromFile))
         };
 
         protected override unsafe void Apply(IntPtr from)

@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Text;
 using FixPluginTypesSerialization.UnityPlayer.Structs;
 using FixPluginTypesSerialization.Util;
 using MonoMod.RuntimeDetour;
 
 namespace FixPluginTypesSerialization.Patchers
 {
-    internal unsafe class IsAssemblyCreatedPatcher : Patcher
+    internal unsafe class IsAssemblyCreated : Patcher
     {
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private delegate bool IsAssemblyCreatedDelegate(MonoManager* _this, int index);
@@ -17,7 +18,7 @@ namespace FixPluginTypesSerialization.Patchers
 
         protected override BytePattern[] Patterns { get; } =
         {
-            "E8 ? ? ? ? 84 C0 74 43 45 84 FF"
+            Encoding.ASCII.GetBytes(nameof(MonoManager) + "::" + nameof(IsAssemblyCreated))
         };
 
         internal static int VanillaAssemblyCount;

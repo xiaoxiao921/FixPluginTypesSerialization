@@ -10,4 +10,4 @@ This solve a bug where custom Serializable structs and such stored in plugin ass
 
 ### Special Thanks
 
-- Horse
+- Horse and Marco. [For the original code](https://github.com/BepInEx/BepInEx.Debug/tree/master/src/MirrorInternalLogs)

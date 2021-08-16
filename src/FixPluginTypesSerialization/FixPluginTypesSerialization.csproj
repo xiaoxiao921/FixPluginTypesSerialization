@@ -14,29 +14,51 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Costura.Fody" Version="5.4.0">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="BepInEx">
       <HintPath>..\..\packages\BepInEx.Core.5.3.0.3\lib\net35\BepInEx.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Microsoft.Deployment.Compression">
+      <HintPath>..\..\packages\Microsoft.Deployment.Compression.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="Microsoft.Deployment.Compression.Cab">
+      <HintPath>..\..\packages\Microsoft.Deployment.Compression.Cab.dll</HintPath>
+      <Private>true</Private>
     </Reference>
     <Reference Include="Mono.Cecil">
       <HintPath>..\..\packages\Mono.Cecil.0.10.4\lib\net35\Mono.Cecil.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="Mono.Cecil.Mdb">
       <HintPath>..\..\packages\Mono.Cecil.0.10.4\lib\net35\Mono.Cecil.Mdb.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="Mono.Cecil.Pdb">
       <HintPath>..\..\packages\Mono.Cecil.0.10.4\lib\net35\Mono.Cecil.Pdb.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="Mono.Cecil.Rocks">
       <HintPath>..\..\packages\Mono.Cecil.0.10.4\lib\net35\Mono.Cecil.Rocks.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="MonoMod.RuntimeDetour">
       <HintPath>..\..\packages\MonoMod.RuntimeDetour.20.5.21.5\lib\netstandard2.0\MonoMod.RuntimeDetour.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="MonoMod.Utils">
       <HintPath>..\..\packages\MonoMod.Utils.20.5.21.5\lib\netstandard2.0\MonoMod.Utils.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine">
       <HintPath>..\..\packages\UnityEngine.Core.5.6.0\lib\net35\UnityEngine.dll</HintPath>
+      <Private>false</Private>
     </Reference>
   </ItemGroup>
 

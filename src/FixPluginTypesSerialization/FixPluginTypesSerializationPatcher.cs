@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using FixPluginTypesSerialization.Patchers;
+using FixPluginTypesSerialization.Util;
 using Mono.Cecil;
 
 namespace FixPluginTypesSerialization
@@ -39,8 +40,12 @@ namespace FixPluginTypesSerialization
             DetourUnityPlayer();
         }
 
-        private static void DetourUnityPlayer()
+        private static unsafe void DetourUnityPlayer()
         {
+            var unityDllPath = Path.Combine(BepInEx.Paths.GameRootPath, "UnityPlayer.dll");
+
+            var pdbReader = new MiniPdbReader(unityDllPath);
+
             static bool IsUnityPlayer(ProcessModule p)
             {
                 return p.ModuleName.ToLowerInvariant().Contains("unityplayer");
@@ -50,13 +55,13 @@ namespace FixPluginTypesSerialization
                 .Cast<ProcessModule>()
                 .FirstOrDefault(IsUnityPlayer) ?? Process.GetCurrentProcess().MainModule;
 
-            var addAssembliesPatcher = new AddAssembliesPatcher();
-            var isAssemblyCreatedPatcher = new IsAssemblyCreatedPatcher();
-            var readStringFromFile = new ReadStringFromFile();
+            var awakeFromLoadPatcher = new AwakeFromLoad();
+            var isAssemblyCreatedPatcher = new IsAssemblyCreated();
+            var readStringFromFilePatcher = new ReadStringFromFile();
 
-            addAssembliesPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize);
-            isAssemblyCreatedPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize);
-            readStringFromFile.Patch(proc.BaseAddress, proc.ModuleMemorySize);
+            awakeFromLoadPatcher.Patch(proc.BaseAddress, pdbReader, Config.MonoManagerAwakeFromLoadOffset);
+            isAssemblyCreatedPatcher.Patch(proc.BaseAddress, pdbReader, Config.MonoManagerIsAssemblyCreatedOffset);
+            readStringFromFilePatcher.Patch(proc.BaseAddress, pdbReader, Config.ReadStringFromFileOffset);
         }
     }
 }
