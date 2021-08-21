@@ -38,11 +38,13 @@ namespace FixPluginTypesSerialization.Util
 
             if (_peReader.RsdsPdbFileName == null)
             {
-                Log.LogDebug("No pdb path found in the pe file");
+                Log.LogInfo("No pdb path found in the pe file");
                 return;
             }
 
             UseCache = Config.LastDownloadedGUID.Value == _peReader.PdbGuid;
+
+            Log.LogMessage($"{(UseCache ? "U" : "Not u")}sing the config cache.");
 
             if (!UseCache)
             {
@@ -70,12 +72,12 @@ namespace FixPluginTypesSerialization.Util
 
                 var pdbCabPath = Path.Combine(tempPath, "pdb.cab");
 
-                Log.LogDebug("Writing the compressed pdb to " + pdbCabPath);
+                Log.LogInfo("Writing the compressed pdb to " + pdbCabPath);
                 File.WriteAllBytes(pdbCabPath, compressedPdbCab);
 
                 var cabInfo = new CabInfo(pdbCabPath);
 
-                Log.LogDebug("Unpacking the compressed pdb");
+                Log.LogInfo("Unpacking the compressed pdb");
                 cabInfo.Unpack(tempPath);
 
                 var pdbPath = Path.Combine(tempPath, peReader.RsdsPdbFileName);
@@ -103,7 +105,7 @@ namespace FixPluginTypesSerialization.Util
                     return IntPtr.Zero;
                 }
 
-                Log.LogDebug($"Found at {match.res:X} ({pdbStartAddress.ToInt64() + match.res:X})");
+                Log.LogInfo($"Found at {match.res:X} ({pdbStartAddress.ToInt64() + match.res:X})");
 
                 var functionOffsetPtr = (uint*)(pdbStartAddress.ToInt64() + match.res - 7);
                 var functionOffset = *functionOffsetPtr;
@@ -113,7 +115,7 @@ namespace FixPluginTypesSerialization.Util
 
                 functionOffset += _peReader.ImageSectionHeaders[sectionIndex].VirtualAddress;
 
-                Log.LogDebug("Function offset : " + functionOffset.ToString("X") + " | Located in section : " + sectionIndex);
+                Log.LogInfo("Function offset : " + functionOffset.ToString("X") + " | PE section : " + sectionIndex);
 
                 return new IntPtr(functionOffset);
             }

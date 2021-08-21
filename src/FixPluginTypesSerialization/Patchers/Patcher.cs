@@ -51,7 +51,7 @@ namespace FixPluginTypesSerialization.Patchers
             }
 
             var ptr = (byte*)start.ToPointer();
-            Log.LogDebug($"Found at {match.res:X} ({start.ToInt64() + match.res:X})");
+            Log.LogInfo($"Found at {match.res:X} ({start.ToInt64() + match.res:X})");
 
             var addr = start.ToInt64() + match.res;
 
@@ -59,11 +59,11 @@ namespace FixPluginTypesSerialization.Patchers
             if (match.p.IsE8)
             {
                 int e8_offset = *(int*)(start.ToInt64() + match.res + 1);
-                Log.LogDebug($"Parsed e8_offset: {e8_offset:X}");
+                Log.LogInfo($"Parsed e8_offset: {e8_offset:X}");
                 addr = addr + 5 + e8_offset;
             }
 
-            Log.LogDebug($"memory address: {addr:X} (image base: {start.ToInt64():X})");
+            Log.LogInfo($"memory address: {addr:X} (image base: {start.ToInt64():X})");
 
             return new IntPtr(addr);
         }
