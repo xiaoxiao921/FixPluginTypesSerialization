@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Text;
-using FixPluginTypesSerialization.UnityPlayer.Structs;
 using FixPluginTypesSerialization.Util;
 using MonoMod.RuntimeDetour;
 
@@ -10,7 +9,7 @@ namespace FixPluginTypesSerialization.Patchers
     internal unsafe class IsAssemblyCreated : Patcher
     {
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private delegate bool IsAssemblyCreatedDelegate(MonoManager* _this, int index);
+        private delegate bool IsAssemblyCreatedDelegate(IntPtr _monoManager, int index);
 
         private static IsAssemblyCreatedDelegate original;
 
@@ -18,7 +17,7 @@ namespace FixPluginTypesSerialization.Patchers
 
         protected override BytePattern[] Patterns { get; } =
         {
-            Encoding.ASCII.GetBytes(nameof(MonoManager) + "::" + nameof(IsAssemblyCreated))
+            Encoding.ASCII.GetBytes("MonoManager::" + nameof(IsAssemblyCreated))
         };
 
         internal static int VanillaAssemblyCount;
@@ -39,14 +38,14 @@ namespace FixPluginTypesSerialization.Patchers
             _detour.Dispose();
         }
 
-        private static unsafe bool OnIsAssemblyCreated(MonoManager* _this, int index)
+        private static unsafe bool OnIsAssemblyCreated(IntPtr _monoManager, int index)
         {
             if (index >= VanillaAssemblyCount)
             {
                 return true;
             }
 
-            return original(_this, index);
+            return original(_monoManager, index);
         }
     }
 }

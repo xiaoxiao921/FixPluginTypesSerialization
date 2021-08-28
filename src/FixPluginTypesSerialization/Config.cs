@@ -1,7 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using FixPluginTypesSerialization.Patchers;
-using FixPluginTypesSerialization.UnityPlayer.Structs;
+using FixPluginTypesSerialization.UnityPlayer.Structs.v2018;
 using System;
 using System.IO;
 

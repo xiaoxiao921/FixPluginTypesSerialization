@@ -12,6 +12,8 @@ This solve a bug where custom Serializable structs and such stored in plugin ass
 
 - Horse [for the original code base](https://github.com/BepInEx/BepInEx.Debug/tree/master/src/MirrorInternalLogs)
 
+- [knah](https://github.com/knah/Il2CppAssemblyUnhollower/)
+
 - KingEnderBrine
 
 - Twiner

@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
-using FixPluginTypesSerialization.UnityPlayer.Structs;
+using FixPluginTypesSerialization.UnityPlayer;
 using FixPluginTypesSerialization.Util;
 using MonoMod.RuntimeDetour;
 
@@ -12,7 +10,7 @@ namespace FixPluginTypesSerialization.Patchers
     internal unsafe class AwakeFromLoad : Patcher
     {
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private delegate void AwakeFromLoadDelegate(MonoManager* _this, int awakeMode);
+        private delegate void AwakeFromLoadDelegate(IntPtr _monoManager, int awakeMode);
 
         private static AwakeFromLoadDelegate original;
 
@@ -20,7 +18,7 @@ namespace FixPluginTypesSerialization.Patchers
 
         protected override BytePattern[] Patterns { get; } =
         {
-            Encoding.ASCII.GetBytes(nameof(MonoManager) + "::" + nameof(AwakeFromLoad))
+            Encoding.ASCII.GetBytes("MonoManager::" + nameof(AwakeFromLoad))
         };
 
         protected override unsafe void Apply(IntPtr from)
@@ -39,89 +37,21 @@ namespace FixPluginTypesSerialization.Patchers
             _detour.Dispose();
         }
 
-        private static unsafe List<AssemblyString> CopyExistingAssemblyList(ref AssemblyList nativeAssemblyList)
+        private static unsafe void OnAwakeFromLoad(IntPtr _monoManager, int awakeMode)
         {
-            var managedAssemblyList = new List<AssemblyString>();
+            var monoManager = UseRightStructs.GetMonoManager(_monoManager);
 
-            for (AssemblyString* s = nativeAssemblyList.first; s != nativeAssemblyList.last; s++)
-            {
-                var newAssemblyString = new AssemblyString
-                {
-                    capacity = s->capacity,
-                    extra = s->extra,
-                    label = s->label,
-                    size = s->size,
-                    data = s->data
-                };
+            monoManager.CopyNativeAssemblyListToManaged();
 
-                managedAssemblyList.Add(newAssemblyString);
-            }
+            IsAssemblyCreated.VanillaAssemblyCount = monoManager.AssemblyCount;
 
-            return managedAssemblyList;
-        }
+            monoManager.AddAssembliesToManagedList(FixPluginTypesSerializationPatcher.PluginPaths);
 
-        private static void AddOurAssemblies(List<AssemblyString> managedAssemblyList, List<string> pluginAssemblyPaths)
-        {
-            foreach (var pluginAssemblyPath in pluginAssemblyPaths)
-            {
-                var pluginAssemblyName = Path.GetFileName(pluginAssemblyPath);
-                var length = (ulong)pluginAssemblyName.Length;
+            monoManager.AllocNativeAssemblyListFromManaged();
 
-                var assemblyString = new AssemblyString
-                {
-                    label = AssemblyString.ValidStringLabel,
-                    data = Marshal.StringToHGlobalAnsi(pluginAssemblyName),
-                    capacity = length,
-                    size = length
-                };
+            monoManager.PrintAssemblies();
 
-                managedAssemblyList.Add(assemblyString);
-            }
-        }
-
-        private static unsafe void NewNativeAssemblyList(ref AssemblyList nativeAssemblyList, List<AssemblyString> managedAssemblyList)
-        {
-            var nativeArray = (AssemblyString*)Marshal.AllocHGlobal(Marshal.SizeOf<AssemblyString>() * managedAssemblyList.Count);
-
-            var i = 0;
-            for (AssemblyString* s = nativeArray; i < managedAssemblyList.Count; s++, i++)
-            {
-                s->label = managedAssemblyList[i].label;
-                s->size = managedAssemblyList[i].size;
-                s->capacity = managedAssemblyList[i].capacity;
-                s->extra = managedAssemblyList[i].extra;
-                s->data = managedAssemblyList[i].data;
-            }
-
-            nativeAssemblyList.first = nativeArray;
-            nativeAssemblyList.last = nativeArray + managedAssemblyList.Count;
-            nativeAssemblyList.end = nativeAssemblyList.last;
-        }
-
-        private static unsafe void PrintAssemblies(ref AssemblyList assemblyNames)
-        {
-            for (AssemblyString* s = assemblyNames.first; s != assemblyNames.last; s++)
-            {
-                if (!s->IsValid())
-                    continue;
-
-                Log.LogWarning($"Ass: {Marshal.PtrToStringAnsi(s->data, (int)s->size)}");
-            }
-        }
-
-        private static unsafe void OnAwakeFromLoad(MonoManager* _this, int awakeMode)
-        {
-            var managedAssemblyList = CopyExistingAssemblyList(ref _this->m_AssemblyNames);
-
-            IsAssemblyCreated.VanillaAssemblyCount = managedAssemblyList.Count;
-
-            AddOurAssemblies(managedAssemblyList, FixPluginTypesSerializationPatcher.PluginPaths);
-
-            NewNativeAssemblyList(ref _this->m_AssemblyNames, managedAssemblyList);
-
-            //PrintAssemblies(ref _this->m_AssemblyNames);
-
-            original(_this, awakeMode);
+            original(_monoManager, awakeMode);
 
             // Dispose the ReadStringFromFile detour as we don't need it anymore
             // and could hog resources for nothing otherwise

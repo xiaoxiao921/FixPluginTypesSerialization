@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using FixPluginTypesSerialization.UnityPlayer.Structs;
+using FixPluginTypesSerialization.UnityPlayer;
 using FixPluginTypesSerialization.Util;
 using MonoMod.RuntimeDetour;
 
@@ -13,12 +11,12 @@ namespace FixPluginTypesSerialization.Patchers
     internal unsafe class ReadStringFromFile : Patcher
     {
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private delegate bool ReadStringFromFileDelegate(IntPtr outData, AssemblyString* pathName);
+        private delegate bool ReadStringFromFileDelegate(IntPtr outData, IntPtr assemblyStringPathName);
 
         private static NativeDetour _detourReadStringFromFile;
         private static ReadStringFromFileDelegate originalReadStringFromFile;
 
-        private static readonly IntPtr Mono = NativeHelper.OpenLibrary("mono-2.0-bdwgc.dll");
+        private static readonly IntPtr Mono = NativeLibraryHelper.OpenLibrary("mono-2.0-bdwgc.dll");
         private static readonly IntPtr mono_assembly_load_from_full_fn = Mono.GetFunction("mono_assembly_load_from_full");
 
         private delegate IntPtr mono_assembly_load_from_full_delegate(IntPtr image, IntPtr constCharFName, IntPtr status, IntPtr refonly);
@@ -26,7 +24,7 @@ namespace FixPluginTypesSerialization.Patchers
         private static NativeDetour _monoDetour;
         private static mono_assembly_load_from_full_delegate originalMonoAssemblyLoadFromFull;
 
-        private static readonly Dictionary<IntPtr, (IntPtr, IntPtr)> ModifiedPathsToOriginalPaths = new();
+        internal static readonly Dictionary<IntPtr, (IntPtr, IntPtr)> ModifiedPathsToOriginalPaths = new();
 
         protected override BytePattern[] Patterns { get; } =
         {
@@ -81,57 +79,28 @@ namespace FixPluginTypesSerialization.Patchers
             }
         }
 
-        private static unsafe void FixAbsolutePath(ref AssemblyString* pathName)
+        private static unsafe bool OnReadFromFile(IntPtr outData, IntPtr assemblyStringPathName)
         {
-            if (pathName->IsValid())
-            {
-                var pathNameStr = Marshal.PtrToStringAnsi(pathName->data);
+            var assemblyString = UseRightStructs.GetAssemblyString(assemblyStringPathName);
 
-                var newPath = FixPluginTypesSerializationPatcher.PluginPaths.FirstOrDefault(p => Path.GetFileName(p) == Path.GetFileName(pathNameStr));
+            assemblyString.FixAbsolutePath();
 
-                if (!string.IsNullOrEmpty(newPath))
-                {
-                    var length = (ulong)newPath.Length;
-
-                    var newNativePath = Marshal.StringToHGlobalAnsi(newPath);
-
-                    var originalData = ((IntPtr)pathName, pathName->data);
-                    ModifiedPathsToOriginalPaths.Add(newNativePath, originalData);
-
-                    pathName->data = newNativePath;
-                    pathName->capacity = length;
-                    pathName->size = length;
-                }
-            }
-        }
-
-        private static unsafe bool OnReadFromFile(IntPtr outData, AssemblyString* pathName)
-        {
-            FixAbsolutePath(ref pathName);
-
-            var res = originalReadStringFromFile(outData, pathName);
+            var res = originalReadStringFromFile(outData, assemblyStringPathName);
 
             return res;
         }
 
-        private static unsafe IntPtr OnMonoAssemblyLoadFromFull(IntPtr image, IntPtr constCharFName, IntPtr status, IntPtr refonly)
+        private static unsafe IntPtr OnMonoAssemblyLoadFromFull(IntPtr image, IntPtr constCharFNamePtr, IntPtr status, IntPtr refonly)
         {
-            var res = originalMonoAssemblyLoadFromFull(image, constCharFName, status, refonly);
+            var res = originalMonoAssemblyLoadFromFull(image, constCharFNamePtr, status, refonly);
 
-            RestoreOriginalString(constCharFName);
+            var constCharFName = UseRightStructs.GetAssemblyString(constCharFNamePtr);
+
+            constCharFName.FixAbsolutePath();
+
+            constCharFName.RestoreOriginalString();
 
             return res;
-        }
-
-        private static void RestoreOriginalString(IntPtr potentialModifiedPath)
-        {
-            // So that Unity can call free_alloc_internal on it
-            if (ModifiedPathsToOriginalPaths.TryGetValue(potentialModifiedPath, out var originalData))
-            {
-                var assemblyString = (AssemblyString*)originalData.Item1;
-                var originalString = originalData.Item2;
-                assemblyString->data = originalString;
-            }
         }
     }
 }
