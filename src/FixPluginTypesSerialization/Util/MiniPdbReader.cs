@@ -18,11 +18,11 @@ namespace FixPluginTypesSerialization.Util
 
         private static byte[] DownloadFromWeb(string url)
         {
-            Log.LogInfo("Downloading : " + url);
+            Log.Info("Downloading : " + url);
             
             var httpResponse = _httpClient.GetAsync(url).GetAwaiter().GetResult();
 
-            Log.LogInfo("Status Code : " + httpResponse.StatusCode);
+            Log.Info("Status Code : " + httpResponse.StatusCode);
 
             if (httpResponse.StatusCode != System.Net.HttpStatusCode.OK)
             {
@@ -38,13 +38,13 @@ namespace FixPluginTypesSerialization.Util
 
             if (_peReader.RsdsPdbFileName == null)
             {
-                Log.LogInfo("No pdb path found in the pe file");
+                Log.Info("No pdb path found in the pe file");
                 return;
             }
 
             UseCache = Config.LastDownloadedGUID.Value == _peReader.PdbGuid;
 
-            Log.LogMessage($"{(UseCache ? "U" : "Not u")}sing the config cache.");
+            Log.Message($"{(UseCache ? "U" : "Not u")}sing the config cache.");
 
             if (!UseCache)
             {
@@ -72,12 +72,12 @@ namespace FixPluginTypesSerialization.Util
 
                 var pdbCabPath = Path.Combine(tempPath, "pdb.cab");
 
-                Log.LogInfo("Writing the compressed pdb to " + pdbCabPath);
+                Log.Info("Writing the compressed pdb to " + pdbCabPath);
                 File.WriteAllBytes(pdbCabPath, compressedPdbCab);
 
                 var cabInfo = new CabInfo(pdbCabPath);
 
-                Log.LogInfo("Unpacking the compressed pdb");
+                Log.Info("Unpacking the compressed pdb");
                 cabInfo.Unpack(tempPath);
 
                 var pdbPath = Path.Combine(tempPath, peReader.RsdsPdbFileName);
@@ -101,11 +101,11 @@ namespace FixPluginTypesSerialization.Util
                 .FirstOrDefault(m => m.res >= 0);
                 if (match == null)
                 {
-                    Log.LogError("No match found, cannot hook ! Please report it to the r2api devs !");
+                    Log.Error("No match found, cannot hook ! Please report it to the r2api devs !");
                     return IntPtr.Zero;
                 }
 
-                Log.LogInfo($"Found at {match.res:X} ({pdbStartAddress.ToInt64() + match.res:X})");
+                Log.Info($"Found at {match.res:X} ({pdbStartAddress.ToInt64() + match.res:X})");
 
                 var functionOffsetPtr = (uint*)(pdbStartAddress.ToInt64() + match.res - 7);
                 var functionOffset = *functionOffsetPtr;
@@ -115,7 +115,7 @@ namespace FixPluginTypesSerialization.Util
 
                 functionOffset += _peReader.ImageSectionHeaders[sectionIndex].VirtualAddress;
 
-                Log.LogInfo("Function offset : " + functionOffset.ToString("X") + " | PE section : " + sectionIndex);
+                Log.Info("Function offset : " + functionOffset.ToString("X") + " | PE section : " + sectionIndex);
 
                 return new IntPtr(functionOffset);
             }

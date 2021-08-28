@@ -46,12 +46,12 @@ namespace FixPluginTypesSerialization.Patchers
                 .FirstOrDefault(m => m.res >= 0);
             if (match == null)
             {
-                Log.LogError("No match found, cannot hook ! Please report it to the r2api devs!");
+                Log.Error("No match found, cannot hook ! Please report it to the r2api devs!");
                 return IntPtr.Zero;
             }
 
             var ptr = (byte*)start.ToPointer();
-            Log.LogInfo($"Found at {match.res:X} ({start.ToInt64() + match.res:X})");
+            Log.Info($"Found at {match.res:X} ({start.ToInt64() + match.res:X})");
 
             var addr = start.ToInt64() + match.res;
 
@@ -59,11 +59,11 @@ namespace FixPluginTypesSerialization.Patchers
             if (match.p.IsE8)
             {
                 int e8_offset = *(int*)(start.ToInt64() + match.res + 1);
-                Log.LogInfo($"Parsed e8_offset: {e8_offset:X}");
+                Log.Info($"Parsed e8_offset: {e8_offset:X}");
                 addr = addr + 5 + e8_offset;
             }
 
-            Log.LogInfo($"memory address: {addr:X} (image base: {start.ToInt64():X})");
+            Log.Info($"memory address: {addr:X} (image base: {start.ToInt64():X})");
 
             return new IntPtr(addr);
         }

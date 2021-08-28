@@ -30,8 +30,8 @@ namespace FixPluginTypesSerialization
             }
             catch (Exception e)
             {
-                Log.LogError($"Failed to initialize plugin types serialization fix: ({e.GetType()}) {e.Message}. Some plugins may not work properly.");
-                Log.LogError(e);
+                Log.Error($"Failed to initialize plugin types serialization fix: ({e.GetType()}) {e.Message}. Some plugins may not work properly.");
+                Log.Error(e);
             }
         }
 
