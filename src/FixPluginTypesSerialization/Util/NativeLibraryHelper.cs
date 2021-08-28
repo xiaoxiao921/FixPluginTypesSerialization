@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace FixPluginTypesSerialization.Util
 {
-    internal static class NativeHelper
+    internal static class NativeLibraryHelper
     {
         private readonly static IntPtr NULL = IntPtr.Zero;
 
