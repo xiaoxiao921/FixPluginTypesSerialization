@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using FixPluginTypesSerialization.UnityPlayer;
+using FixPluginTypesSerialization.UnityPlayer.Structs.Default;
 using FixPluginTypesSerialization.Util;
 using MonoMod.RuntimeDetour;
 
@@ -81,7 +82,7 @@ namespace FixPluginTypesSerialization.Patchers
 
         private static unsafe bool OnReadFromFile(IntPtr outData, IntPtr assemblyStringPathName)
         {
-            var assemblyString = UseRightStructs.GetAssemblyString(assemblyStringPathName);
+            var assemblyString = UseRightStructs.GetStruct<IAssemblyString>(assemblyStringPathName);
 
             assemblyString.FixAbsolutePath();
 
@@ -94,7 +95,7 @@ namespace FixPluginTypesSerialization.Patchers
         {
             var res = originalMonoAssemblyLoadFromFull(image, constCharFNamePtr, status, refonly);
 
-            var constCharFName = UseRightStructs.GetAssemblyString(constCharFNamePtr);
+            var constCharFName = UseRightStructs.GetStruct<IAssemblyString>(constCharFNamePtr);
 
             constCharFName.FixAbsolutePath();
 

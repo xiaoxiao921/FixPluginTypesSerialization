@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using FixPluginTypesSerialization.UnityPlayer;
+using FixPluginTypesSerialization.UnityPlayer.Structs.Default;
 using FixPluginTypesSerialization.Util;
 using MonoMod.RuntimeDetour;
 
@@ -39,7 +40,7 @@ namespace FixPluginTypesSerialization.Patchers
 
         private static unsafe void OnAwakeFromLoad(IntPtr _monoManager, int awakeMode)
         {
-            var monoManager = UseRightStructs.GetMonoManager(_monoManager);
+            var monoManager = UseRightStructs.GetStruct<IMonoManager>(_monoManager);
 
             monoManager.CopyNativeAssemblyListToManaged();
 

@@ -159,36 +159,18 @@ namespace FixPluginTypesSerialization.UnityPlayer
             }
         }
 
-        private static IMonoManager _monoManager;
-        internal static IMonoManager GetMonoManager(IntPtr monoManagerPtr)
+        internal static T GetStruct<T>(IntPtr ptr) where T : INativeStruct
         {
-            if (monoManagerPtr == IntPtr.Zero)
+            if (ptr == IntPtr.Zero)
             {
-                throw new ArgumentNullException("monoManagerPtr");
+                throw new ArgumentNullException("ptr");
             }
 
-            if (_monoManager == null || _monoManager.Pointer != monoManagerPtr)
-            {
-                _monoManager = GetHandler<IMonoManager>();
+            var @struct = GetHandler<T>();
 
-                _monoManager.Pointer = monoManagerPtr;
-            }
+            @struct.Pointer = ptr;
 
-            return _monoManager;
-        }
-
-        internal static IAssemblyString GetAssemblyString(IntPtr assemblyStringPtr)
-        {
-            if (assemblyStringPtr == IntPtr.Zero)
-            {
-                throw new ArgumentNullException("assemblyStringPtr");
-            }
-
-            var assemblyString = GetHandler<IAssemblyString>();
-
-            assemblyString.Pointer = assemblyStringPtr;
-
-            return assemblyString;
+            return @struct;
         }
     }
 }
