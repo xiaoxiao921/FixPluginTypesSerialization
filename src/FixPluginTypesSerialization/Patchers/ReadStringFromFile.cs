@@ -97,8 +97,6 @@ namespace FixPluginTypesSerialization.Patchers
 
             var constCharFName = UseRightStructs.GetStruct<IAssemblyString>(constCharFNamePtr);
 
-            constCharFName.FixAbsolutePath();
-
             constCharFName.RestoreOriginalString();
 
             return res;
