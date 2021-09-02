@@ -60,7 +60,7 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2018
 
                 var assemblyString = new AssemblyStringStruct
                 {
-                    label = MemLabelIdentifier.ValidStringLabel,
+                    label = AssemblyStringStruct.ValidStringLabel,
                     data = Marshal.StringToHGlobalAnsi(pluginAssemblyName),
                     capacity = length,
                     size = length
@@ -98,6 +98,11 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2018
 
                 Log.Warning($"Ass: {Marshal.PtrToStringAnsi(s->data, (int)s->size)}");
             }
+        }
+
+        public unsafe void RestoreOriginalAssemblyList()
+        {
+
         }
     }
 }

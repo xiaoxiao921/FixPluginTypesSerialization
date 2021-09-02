@@ -17,7 +17,14 @@ namespace FixPluginTypesSerialization.Patchers
 
         private static NativeDetour _detour;
 
-        protected override BytePattern[] Patterns { get; } =
+        internal static IMonoManager CurrentMonoManager;
+
+        protected override BytePattern[] PdbPatterns { get; } =
+        {
+            Encoding.ASCII.GetBytes("MonoManager::" + nameof(AwakeFromLoad))
+        };
+
+        protected override BytePattern[] SigPatterns { get; } =
         {
             Encoding.ASCII.GetBytes("MonoManager::" + nameof(AwakeFromLoad))
         };
@@ -40,23 +47,23 @@ namespace FixPluginTypesSerialization.Patchers
 
         private static unsafe void OnAwakeFromLoad(IntPtr _monoManager, int awakeMode)
         {
-            var monoManager = UseRightStructs.GetStruct<IMonoManager>(_monoManager);
+            CurrentMonoManager = UseRightStructs.GetStruct<IMonoManager>(_monoManager);
 
-            monoManager.CopyNativeAssemblyListToManaged();
+            CurrentMonoManager.CopyNativeAssemblyListToManaged();
 
-            IsAssemblyCreated.VanillaAssemblyCount = monoManager.AssemblyCount;
+            IsAssemblyCreated.VanillaAssemblyCount = CurrentMonoManager.AssemblyCount;
 
-            monoManager.AddAssembliesToManagedList(FixPluginTypesSerializationPatcher.PluginPaths);
+            CurrentMonoManager.AddAssembliesToManagedList(FixPluginTypesSerializationPatcher.PluginPaths);
 
-            monoManager.AllocNativeAssemblyListFromManaged();
+            CurrentMonoManager.AllocNativeAssemblyListFromManaged();
 
-            monoManager.PrintAssemblies();
+            CurrentMonoManager.PrintAssemblies();
 
             original(_monoManager, awakeMode);
 
             // Dispose the ReadStringFromFile detour as we don't need it anymore
             // and could hog resources for nothing otherwise
-            ReadStringFromFile.Dispose();
+            //ReadStringFromFile.Dispose();
         }
     }
 }

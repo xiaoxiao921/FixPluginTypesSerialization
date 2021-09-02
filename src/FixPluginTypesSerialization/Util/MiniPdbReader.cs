@@ -14,6 +14,8 @@ namespace FixPluginTypesSerialization.Util
 
         private byte[] _pdbFile;
 
+        internal bool IsPdbAvailable;
+
         internal bool UseCache;
 
         private static byte[] DownloadFromWeb(string url)
@@ -39,25 +41,34 @@ namespace FixPluginTypesSerialization.Util
             if (_peReader.RsdsPdbFileName == null)
             {
                 Log.Info("No pdb path found in the pe file");
-                return;
             }
-
-            UseCache = Config.LastDownloadedGUID.Value == _peReader.PdbGuid;
-
-            Log.Message($"{(UseCache ? "U" : "Not u")}sing the config cache.");
-
-            if (!UseCache)
+            else
             {
-                DownloadUnityPdb(_peReader);
+                UseCache = Config.LastDownloadedGUID.Value == _peReader.PdbGuid;
 
-                if (_pdbFile != null)
+                Log.Message($"{(UseCache ? "U" : "Not u")}sing the config cache");
+
+                if (!UseCache)
                 {
-                    Config.LastDownloadedGUID.Value = _peReader.PdbGuid;
+                    if (DownloadUnityPdb(_peReader))
+                    {
+                        Config.LastDownloadedGUID.Value = _peReader.PdbGuid;
+
+                        IsPdbAvailable = true;
+                    }
+                    else
+                    {
+                        Log.Info("No pdb. Falling back to sig matching");
+                    }
+                }
+                else
+                {
+                    IsPdbAvailable = true;
                 }
             }
         }
 
-        private void DownloadUnityPdb(PeReader peReader)
+        private bool DownloadUnityPdb(PeReader peReader)
         {
             const string unitySymbolServer = "http://symbolserver.unity3d.com/";
 
@@ -87,6 +98,8 @@ namespace FixPluginTypesSerialization.Util
                 File.Delete(pdbCabPath);
                 File.Delete(pdbPath);
             }
+
+            return _pdbFile != null;
         }
 
         internal unsafe IntPtr FindFunctionOffset(BytePattern[] bytePatterns)

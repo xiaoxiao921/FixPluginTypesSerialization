@@ -15,7 +15,12 @@ namespace FixPluginTypesSerialization.Patchers
 
         private static NativeDetour _detour;
 
-        protected override BytePattern[] Patterns { get; } =
+        protected override BytePattern[] PdbPatterns { get; } =
+        {
+            Encoding.ASCII.GetBytes("MonoManager::" + nameof(IsAssemblyCreated))
+        };
+
+        protected override BytePattern[] SigPatterns { get; } =
         {
             Encoding.ASCII.GetBytes("MonoManager::" + nameof(IsAssemblyCreated))
         };

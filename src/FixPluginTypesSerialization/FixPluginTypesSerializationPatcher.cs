@@ -58,10 +58,12 @@ namespace FixPluginTypesSerialization
             var awakeFromLoadPatcher = new AwakeFromLoad();
             var isAssemblyCreatedPatcher = new IsAssemblyCreated();
             var readStringFromFilePatcher = new ReadStringFromFile();
+            var callStaticMonoMethodPatcher = new CallStaticMonoMethod();
 
-            awakeFromLoadPatcher.Patch(proc.BaseAddress, pdbReader, Config.MonoManagerAwakeFromLoadOffset);
-            isAssemblyCreatedPatcher.Patch(proc.BaseAddress, pdbReader, Config.MonoManagerIsAssemblyCreatedOffset);
-            readStringFromFilePatcher.Patch(proc.BaseAddress, pdbReader, Config.ReadStringFromFileOffset);
+            awakeFromLoadPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.MonoManagerAwakeFromLoadOffset);
+            isAssemblyCreatedPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.MonoManagerIsAssemblyCreatedOffset);
+            readStringFromFilePatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.ReadStringFromFileOffset);
+            callStaticMonoMethodPatcher.PatchWithSig(proc.BaseAddress, proc.ModuleMemorySize);
         }
     }
 }

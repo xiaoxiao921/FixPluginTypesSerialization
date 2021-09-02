@@ -2,11 +2,13 @@
 
 namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2019
 {
+    // struct dynamic_array_detail::dynamic_array_data
     [StructLayout(LayoutKind.Sequential)]
-    public unsafe struct AssemblyList
+    public struct AssemblyList
     {
-        public AssemblyStringStruct* first;
-        public AssemblyStringStruct* last;
-        public AssemblyStringStruct* end;
+        public nint ptr;
+        public int label;
+        public ulong size;
+        public ulong capacity;
     }
 }

@@ -25,9 +25,15 @@ namespace FixPluginTypesSerialization.Patchers
         private static NativeDetour _monoDetour;
         private static mono_assembly_load_from_full_delegate originalMonoAssemblyLoadFromFull;
 
-        internal static readonly Dictionary<IntPtr, (IntPtr, IntPtr)> ModifiedPathsToOriginalPaths = new();
+        internal static readonly Dictionary<IntPtr, (IntPtr, IntPtr, ulong)> ModifiedPathsToOriginalPaths = new();
+        internal static int LoadedPluginsCount;
 
-        protected override BytePattern[] Patterns { get; } =
+        protected override BytePattern[] PdbPatterns { get; } =
+        {
+            Encoding.ASCII.GetBytes(nameof(ReadStringFromFile))
+        };
+
+        protected override BytePattern[] SigPatterns { get; } =
         {
             Encoding.ASCII.GetBytes(nameof(ReadStringFromFile))
         };
@@ -40,7 +46,7 @@ namespace FixPluginTypesSerialization.Patchers
 
         private void ApplyReadStringFromFileDetour(IntPtr from)
         {
-            var hookPtr = Marshal.GetFunctionPointerForDelegate(new ReadStringFromFileDelegate(OnReadFromFile));
+            var hookPtr = Marshal.GetFunctionPointerForDelegate(new ReadStringFromFileDelegate(OnReadStringFromFile));
             _detourReadStringFromFile = new NativeDetour(from, hookPtr, new NativeDetourConfig { ManualApply = true });
 
             originalReadStringFromFile = _detourReadStringFromFile.GenerateTrampoline<ReadStringFromFileDelegate>();
@@ -80,7 +86,7 @@ namespace FixPluginTypesSerialization.Patchers
             }
         }
 
-        private static unsafe bool OnReadFromFile(IntPtr outData, IntPtr assemblyStringPathName)
+        private static unsafe bool OnReadStringFromFile(IntPtr outData, IntPtr assemblyStringPathName)
         {
             var assemblyString = UseRightStructs.GetStruct<IAssemblyString>(assemblyStringPathName);
 
@@ -97,7 +103,7 @@ namespace FixPluginTypesSerialization.Patchers
 
             var constCharFName = UseRightStructs.GetStruct<IAssemblyString>(constCharFNamePtr);
 
-            constCharFName.RestoreOriginalString();
+            constCharFName.RestoreOriginalString(constCharFNamePtr);
 
             return res;
         }

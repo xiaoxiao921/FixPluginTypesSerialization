@@ -32,16 +32,20 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2019
         public List<AssemblyStringStruct> ManagedAssemblyList = new();
         public int AssemblyCount => ManagedAssemblyList.Count;
 
+        private AssemblyList OldNativeArray;
+
         public unsafe void CopyNativeAssemblyListToManaged()
         {
             ManagedAssemblyList.Clear();
 
-            for (AssemblyStringStruct* s = _this->m_AssemblyNames.first; s != _this->m_AssemblyNames.last; s++)
+            ulong i = 0;
+            for (AssemblyStringStruct* s = (AssemblyStringStruct*)_this->m_AssemblyNames.ptr;
+                i < _this->m_AssemblyNames.size;
+                s++, i++)
             {
                 var newAssemblyString = new AssemblyStringStruct
                 {
                     capacity = s->capacity,
-                    extra = s->extra,
                     label = s->label,
                     size = s->size,
                     data = s->data
@@ -60,7 +64,7 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2019
 
                 var assemblyString = new AssemblyStringStruct
                 {
-                    label = MemLabelIdentifier.ValidStringLabel,
+                    label = AssemblyStringStruct.ValidStringLabel,
                     data = Marshal.StringToHGlobalAnsi(pluginAssemblyName),
                     capacity = length,
                     size = length
@@ -80,24 +84,35 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2019
                 s->label = ManagedAssemblyList[i].label;
                 s->size = ManagedAssemblyList[i].size;
                 s->capacity = ManagedAssemblyList[i].capacity;
-                s->extra = ManagedAssemblyList[i].extra;
                 s->data = ManagedAssemblyList[i].data;
             }
 
-            _this->m_AssemblyNames.first = nativeArray;
-            _this->m_AssemblyNames.last = nativeArray + ManagedAssemblyList.Count;
-            _this->m_AssemblyNames.end = _this->m_AssemblyNames.last;
+            OldNativeArray = _this->m_AssemblyNames;
+
+            _this->m_AssemblyNames.ptr = (nint)nativeArray;
+            _this->m_AssemblyNames.size = (ulong)ManagedAssemblyList.Count;
+            _this->m_AssemblyNames.capacity = _this->m_AssemblyNames.size;
         }
 
         public unsafe void PrintAssemblies()
         {
-            for (AssemblyStringStruct* s = _this->m_AssemblyNames.first; s != _this->m_AssemblyNames.last; s++)
+            ulong i = 0;
+            for (AssemblyStringStruct* s = (AssemblyStringStruct*)_this->m_AssemblyNames.ptr;
+                i < _this->m_AssemblyNames.size;
+                s++, i++)
             {
                 if (!s->IsValid())
                     continue;
 
-                Log.Warning($"Ass: {Marshal.PtrToStringAnsi(s->data, (int)s->size)}");
+                Log.Warning($"Ass: {Marshal.PtrToStringAnsi(s->data, (int)s->size)} | label : {s->label:X}");
             }
+        }
+
+        public unsafe void RestoreOriginalAssemblyList()
+        {
+            //PrintAssemblies();
+
+            //_this->m_AssemblyNames.ptr = 0;
         }
     }
 }

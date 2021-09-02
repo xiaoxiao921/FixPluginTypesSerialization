@@ -7,17 +7,19 @@ using System.Runtime.InteropServices;
 
 namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2018
 {
-    // core::StringStorageDefault<char> from ScriptingManager.h
+    // core::StringStorageDefault<char> from ida -> produced C header file
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public struct AssemblyStringStruct
     {
+        public const int ValidStringLabel = 0x45;
+
         public nint data;
         public ulong capacity;
         public ulong extra;
         public ulong size;
         public int label;
 
-        public bool IsValid() => data != 0 && label == MemLabelIdentifier.ValidStringLabel;
+        public bool IsValid() => data != 0 && label == ValidStringLabel;
     }
 
     [ApplicableToUnityVersionsSince("5.3.0")]
@@ -39,9 +41,9 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2018
 
         public unsafe void FixAbsolutePath()
         {
-            if (_this->IsValid())
+            if (_this->data != 0)
             {
-                var pathNameStr = Marshal.PtrToStringAnsi(_this->data);
+                var pathNameStr = Marshal.PtrToStringAnsi(_this->data, (int)_this->size);
 
                 var newPath = FixPluginTypesSerializationPatcher.PluginPaths.FirstOrDefault(p => Path.GetFileName(p) == Path.GetFileName(pathNameStr));
 
@@ -51,7 +53,7 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2018
 
                     var newNativePath = Marshal.StringToHGlobalAnsi(newPath);
 
-                    var originalData = ((IntPtr)_this, _this->data);
+                    var originalData = ((IntPtr)_this, _this->data, _this->size);
                     ReadStringFromFile.ModifiedPathsToOriginalPaths.Add(newNativePath, originalData);
 
                     _this->data = newNativePath;
@@ -61,14 +63,19 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2018
             }
         }
 
-        public unsafe void RestoreOriginalString()
+        /// <summary>
+        /// _this is a const char*.
+        /// </summary>
+        /// <param name="constCharPtr"></param>
+        public unsafe void RestoreOriginalString(IntPtr constCharPtr)
         {
             // So that Unity can call free_alloc_internal on it
-            if (ReadStringFromFile.ModifiedPathsToOriginalPaths.TryGetValue((IntPtr)_this, out var originalData))
+            if (ReadStringFromFile.ModifiedPathsToOriginalPaths.TryGetValue(constCharPtr, out var originalData))
             {
                 var assemblyString = (AssemblyStringStruct*)originalData.Item1;
-                var originalString = originalData.Item2;
-                assemblyString->data = originalString;
+                assemblyString->data = originalData.Item2;
+                assemblyString->size = originalData.Item3;
+                assemblyString->capacity = originalData.Item3;
             }
         }
     }

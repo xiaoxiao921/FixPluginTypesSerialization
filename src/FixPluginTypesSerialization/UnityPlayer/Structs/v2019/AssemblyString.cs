@@ -7,12 +7,11 @@ using System.Runtime.InteropServices;
 
 namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2019
 {
-    // core::StringStorageDefault<char> from ScriptingManager.h
+    // core::StringStorageDefault<char> from ida -> produced C header file
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public struct AssemblyStringStruct
     {
-        // MemLabelIdentifier::kMemStringId
-        public const int ValidStringLabel = 0x45;
+        public const int ValidStringLabel = 0x2A;
 
         public nint data;
         public ulong capacity;
@@ -42,9 +41,9 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2019
 
         public unsafe void FixAbsolutePath()
         {
-            if (_this->IsValid())
+            if (_this->data != 0)
             {
-                var pathNameStr = Marshal.PtrToStringAnsi(_this->data);
+                var pathNameStr = Marshal.PtrToStringAnsi(_this->data, (int)_this->size);
 
                 var newPath = FixPluginTypesSerializationPatcher.PluginPaths.FirstOrDefault(p => Path.GetFileName(p) == Path.GetFileName(pathNameStr));
 
@@ -54,7 +53,7 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2019
 
                     var newNativePath = Marshal.StringToHGlobalAnsi(newPath);
 
-                    var originalData = ((IntPtr)_this, _this->data);
+                    var originalData = ((IntPtr)_this, _this->data, _this->size);
                     ReadStringFromFile.ModifiedPathsToOriginalPaths.Add(newNativePath, originalData);
 
                     _this->data = newNativePath;
@@ -64,14 +63,31 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2019
             }
         }
 
-        public unsafe void RestoreOriginalString()
+        /// <summary>
+        /// _this is a const char*.
+        /// </summary>
+        /// <param name="constCharPtr"></param>
+        public unsafe void RestoreOriginalString(IntPtr constCharPtr)
         {
             // So that Unity can call free_alloc_internal on it
-            if (ReadStringFromFile.ModifiedPathsToOriginalPaths.TryGetValue((IntPtr)_this, out var originalData))
+            if (ReadStringFromFile.ModifiedPathsToOriginalPaths.TryGetValue(constCharPtr, out var originalData))
             {
                 var assemblyString = (AssemblyStringStruct*)originalData.Item1;
-                var originalString = originalData.Item2;
-                assemblyString->data = originalString;
+                assemblyString->data = originalData.Item2;
+                assemblyString->size = originalData.Item3;
+                assemblyString->capacity = originalData.Item3;
+
+                TryRestoreNativeAssemblyList();
+            }
+        }
+
+        private void TryRestoreNativeAssemblyList()
+        {
+            ReadStringFromFile.LoadedPluginsCount++;
+            if (ReadStringFromFile.LoadedPluginsCount == ReadStringFromFile.ModifiedPathsToOriginalPaths.Count)
+            {
+                Log.Error("trying to restore");
+                AwakeFromLoad.CurrentMonoManager.RestoreOriginalAssemblyList();
             }
         }
     }

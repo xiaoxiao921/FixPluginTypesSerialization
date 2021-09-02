@@ -7,9 +7,22 @@ namespace FixPluginTypesSerialization.Patchers
 {
     internal abstract class Patcher
     {
-        protected abstract BytePattern[] Patterns { get; }
+        protected abstract BytePattern[] PdbPatterns { get; }
+        protected abstract BytePattern[] SigPatterns { get; }
 
-        public void Patch(IntPtr unityModule, MiniPdbReader pdbReader, ConfigEntry<string> functionOffsetCache)
+        public void Patch(IntPtr unityModule, int moduleSize, MiniPdbReader pdbReader, ConfigEntry<string> functionOffsetCache)
+        {
+            if (pdbReader.IsPdbAvailable)
+            {
+                PatchWithPdb(unityModule, pdbReader, functionOffsetCache);
+            }
+            else
+            {
+                PatchWithSig(unityModule, moduleSize);
+            }
+        }
+
+        internal void PatchWithPdb(IntPtr unityModule, MiniPdbReader pdbReader, ConfigEntry<string> functionOffsetCache)
         {
             IntPtr functionOffset;
 
@@ -19,19 +32,19 @@ namespace FixPluginTypesSerialization.Patchers
             }
             else
             {
-                functionOffset = pdbReader.FindFunctionOffset(Patterns);
+                functionOffset = pdbReader.FindFunctionOffset(PdbPatterns);
                 if (functionOffset == IntPtr.Zero)
                     return;
 
                 functionOffsetCache.Value = functionOffset.ToString("X");
             }
-
+            
             functionOffset = (IntPtr)(unityModule.ToInt64() + functionOffset.ToInt64());
 
             Apply(functionOffset);
         }
 
-        public void Patch(IntPtr unityModule, int moduleSize)
+        internal void PatchWithSig(IntPtr unityModule, int moduleSize)
         {
             var match = FindMatch(unityModule, moduleSize);
             if (match == IntPtr.Zero)
@@ -42,7 +55,7 @@ namespace FixPluginTypesSerialization.Patchers
 
         private unsafe IntPtr FindMatch(IntPtr start, long maxSize)
         {
-            var match = Patterns.Select(p => new { p, res = p.Match(start, maxSize) })
+            var match = SigPatterns.Select(p => new { p, res = p.Match(start, maxSize) })
                 .FirstOrDefault(m => m.res >= 0);
             if (match == null)
             {
