@@ -32,6 +32,7 @@ namespace FixPluginTypesSerialization.Patchers
             Encoding.ASCII.GetBytes(nameof(ReadStringFromFile))
         };
 
+        // Todo
         protected override BytePattern[] SigPatterns { get; } =
         {
             Encoding.ASCII.GetBytes(nameof(ReadStringFromFile))

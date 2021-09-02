@@ -24,6 +24,7 @@ namespace FixPluginTypesSerialization.Patchers
             Encoding.ASCII.GetBytes("MonoManager::" + nameof(AwakeFromLoad))
         };
 
+        // Todo
         protected override BytePattern[] SigPatterns { get; } =
         {
             Encoding.ASCII.GetBytes("MonoManager::" + nameof(AwakeFromLoad))

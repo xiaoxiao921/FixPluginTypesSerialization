@@ -20,6 +20,7 @@ namespace FixPluginTypesSerialization.Patchers
             Encoding.ASCII.GetBytes("MonoManager::" + nameof(IsAssemblyCreated))
         };
 
+        // Todo
         protected override BytePattern[] SigPatterns { get; } =
         {
             Encoding.ASCII.GetBytes("MonoManager::" + nameof(IsAssemblyCreated))
