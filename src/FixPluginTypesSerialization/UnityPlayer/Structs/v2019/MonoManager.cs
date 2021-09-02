@@ -32,8 +32,6 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2019
         public List<AssemblyStringStruct> ManagedAssemblyList = new();
         public int AssemblyCount => ManagedAssemblyList.Count;
 
-        private AssemblyList OldNativeArray;
-
         public unsafe void CopyNativeAssemblyListToManaged()
         {
             ManagedAssemblyList.Clear();
@@ -46,6 +44,7 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2019
                 var newAssemblyString = new AssemblyStringStruct
                 {
                     capacity = s->capacity,
+                    extra = s->extra,
                     label = s->label,
                     size = s->size,
                     data = s->data
@@ -84,10 +83,9 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2019
                 s->label = ManagedAssemblyList[i].label;
                 s->size = ManagedAssemblyList[i].size;
                 s->capacity = ManagedAssemblyList[i].capacity;
+                s->extra = ManagedAssemblyList[i].extra;
                 s->data = ManagedAssemblyList[i].data;
             }
-
-            OldNativeArray = _this->m_AssemblyNames;
 
             _this->m_AssemblyNames.ptr = (nint)nativeArray;
             _this->m_AssemblyNames.size = (ulong)ManagedAssemblyList.Count;
@@ -106,13 +104,6 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2019
 
                 Log.Warning($"Ass: {Marshal.PtrToStringAnsi(s->data, (int)s->size)} | label : {s->label:X}");
             }
-        }
-
-        public unsafe void RestoreOriginalAssemblyList()
-        {
-            //PrintAssemblies();
-
-            //_this->m_AssemblyNames.ptr = 0;
         }
     }
 }

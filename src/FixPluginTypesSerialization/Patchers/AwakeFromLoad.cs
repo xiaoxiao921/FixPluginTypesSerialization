@@ -57,13 +57,13 @@ namespace FixPluginTypesSerialization.Patchers
 
             CurrentMonoManager.AllocNativeAssemblyListFromManaged();
 
-            CurrentMonoManager.PrintAssemblies();
+            //CurrentMonoManager.PrintAssemblies();
 
             original(_monoManager, awakeMode);
 
             // Dispose the ReadStringFromFile detour as we don't need it anymore
             // and could hog resources for nothing otherwise
-            //ReadStringFromFile.Dispose();
+            ReadStringFromFile.Dispose();
         }
     }
 }

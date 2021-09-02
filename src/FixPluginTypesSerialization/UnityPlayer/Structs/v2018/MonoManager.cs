@@ -99,10 +99,5 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2018
                 Log.Warning($"Ass: {Marshal.PtrToStringAnsi(s->data, (int)s->size)}");
             }
         }
-
-        public unsafe void RestoreOriginalAssemblyList()
-        {
-
-        }
     }
 }

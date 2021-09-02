@@ -76,18 +76,6 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2019
                 assemblyString->data = originalData.Item2;
                 assemblyString->size = originalData.Item3;
                 assemblyString->capacity = originalData.Item3;
-
-                TryRestoreNativeAssemblyList();
-            }
-        }
-
-        private void TryRestoreNativeAssemblyList()
-        {
-            ReadStringFromFile.LoadedPluginsCount++;
-            if (ReadStringFromFile.LoadedPluginsCount == ReadStringFromFile.ModifiedPathsToOriginalPaths.Count)
-            {
-                Log.Error("trying to restore");
-                AwakeFromLoad.CurrentMonoManager.RestoreOriginalAssemblyList();
             }
         }
     }

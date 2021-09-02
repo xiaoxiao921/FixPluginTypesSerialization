@@ -26,7 +26,6 @@ namespace FixPluginTypesSerialization.Patchers
         private static mono_assembly_load_from_full_delegate originalMonoAssemblyLoadFromFull;
 
         internal static readonly Dictionary<IntPtr, (IntPtr, IntPtr, ulong)> ModifiedPathsToOriginalPaths = new();
-        internal static int LoadedPluginsCount;
 
         protected override BytePattern[] PdbPatterns { get; } =
         {
