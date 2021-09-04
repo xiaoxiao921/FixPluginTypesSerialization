@@ -59,7 +59,7 @@ namespace FixPluginTypesSerialization.Patchers
                 .FirstOrDefault(m => m.res > 0);
             if (match == null)
             {
-                Log.Error("No match found, cannot hook ! Please report it to the r2api devs!");
+                Log.Error("No sig match found, cannot hook ! Please report it to the r2api devs!");
                 return IntPtr.Zero;
             }
 
