@@ -12,7 +12,7 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2018
         [FieldOffset(0x198)] public AssemblyList m_AssemblyNames;
     }
 
-    [ApplicableToUnityVersionsSince("5.3.0")]
+    [ApplicableToUnityVersionsSince("5.0.0")]
     public class MonoManager : IMonoManager
     {
         public MonoManager()

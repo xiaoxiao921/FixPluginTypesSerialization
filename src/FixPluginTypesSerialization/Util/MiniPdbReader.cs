@@ -111,10 +111,10 @@ namespace FixPluginTypesSerialization.Util
                 long pdbEndAddress = (long)(pdbFileStartPtr + sizeOfPdb);
 
                 var match = bytePatterns.Select(p => new { p, res = p.Match(pdbStartAddress, pdbEndAddress) })
-                .FirstOrDefault(m => m.res >= 0);
+                .FirstOrDefault(m => m.res > 0);
                 if (match == null)
                 {
-                    Log.Error("No match found, cannot hook ! Please report it to the r2api devs !");
+                    Log.Error("No function offset found, cannot hook ! Please report it to the r2api devs !");
                     return IntPtr.Zero;
                 }
 
