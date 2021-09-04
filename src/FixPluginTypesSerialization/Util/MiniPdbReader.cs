@@ -40,7 +40,7 @@ namespace FixPluginTypesSerialization.Util
 
             if (_peReader.RsdsPdbFileName == null)
             {
-                Log.Info("No pdb path found in the pe file");
+                Log.Info("No pdb path found in the pe file. Falling back to sig matching");
             }
             else
             {
@@ -58,7 +58,7 @@ namespace FixPluginTypesSerialization.Util
                     }
                     else
                     {
-                        Log.Info("No pdb. Falling back to sig matching");
+                        Log.Info("Failed to find the linked pdb in the unity symbol server. Falling back to sig matching");
                     }
                 }
                 else
