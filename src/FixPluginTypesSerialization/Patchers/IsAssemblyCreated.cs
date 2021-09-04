@@ -20,10 +20,10 @@ namespace FixPluginTypesSerialization.Patchers
             Encoding.ASCII.GetBytes("MonoManager::" + nameof(IsAssemblyCreated))
         };
 
-        // Todo
         protected override BytePattern[] SigPatterns { get; } =
         {
-            Encoding.ASCII.GetBytes("MonoManager::" + nameof(IsAssemblyCreated))
+            "E8 ? ? ? ? 84 C0 74 43 45 84 FF", // 2018.4.16
+            "E8 ? ? ? ? 84 C0 74 41 45 84 FF" // 2019.4.16
         };
 
         internal static int VanillaAssemblyCount;

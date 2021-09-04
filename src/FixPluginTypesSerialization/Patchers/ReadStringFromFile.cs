@@ -32,10 +32,11 @@ namespace FixPluginTypesSerialization.Patchers
             Encoding.ASCII.GetBytes(nameof(ReadStringFromFile))
         };
 
-        // Todo
         protected override BytePattern[] SigPatterns { get; } =
         {
-            Encoding.ASCII.GetBytes(nameof(ReadStringFromFile))
+            "E8 ? ? ? ? 4C 8D 45 EF 48 8D 4D 17 84 C0", // 5.0.4
+            "E8 ? ? ? ? 48 8B 4D B7 0F B6 F0", // 2018.4.16
+            "E8 ? ? ? ? 48 8D 4D 8F 0F B6 D8" // 2019.4.16
         };
 
         protected override unsafe void Apply(IntPtr from)
