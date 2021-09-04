@@ -56,7 +56,7 @@ namespace FixPluginTypesSerialization.Patchers
         private unsafe IntPtr FindMatch(IntPtr start, long maxSize)
         {
             var match = SigPatterns.Select(p => new { p, res = p.Match(start, maxSize) })
-                .FirstOrDefault(m => m.res >= 0);
+                .FirstOrDefault(m => m.res > 0);
             if (match == null)
             {
                 Log.Error("No match found, cannot hook ! Please report it to the r2api devs!");
