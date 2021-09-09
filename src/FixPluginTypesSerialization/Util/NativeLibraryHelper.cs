@@ -5,6 +5,8 @@ using System.Runtime.InteropServices;
 
 namespace FixPluginTypesSerialization.Util
 {
+    // All credits goes to https://github.com/0x0ade/MidiToMGBA/blob/master/src/DynamicDll.cs
+
     internal static class NativeLibraryHelper
     {
         private readonly static IntPtr NULL = IntPtr.Zero;
