@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using FixPluginTypesSerialization.Patchers;
 using FixPluginTypesSerialization.Util;
 using Mono.Cecil;
@@ -14,7 +15,21 @@ namespace FixPluginTypesSerialization
         public static IEnumerable<string> TargetDLLs { get; } = new string[0];
 
         public static List<string> PluginPaths =
-            Directory.GetFiles(BepInEx.Paths.PluginPath, "*.dll", SearchOption.AllDirectories).ToList();
+            Directory.GetFiles(BepInEx.Paths.PluginPath, "*.dll", SearchOption.AllDirectories).Where(f => IsNetAssembly(f)).ToList();
+
+        public static bool IsNetAssembly(string fileName)
+        {
+            try
+            {
+                AssemblyName.GetAssemblyName(fileName);
+            }
+            catch (BadImageFormatException)
+            {
+                return false;
+            }
+
+            return true;
+        }
 
         public static void Patch(AssemblyDefinition ass)
         {
