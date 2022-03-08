@@ -3,12 +3,13 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace FixPluginTypesSerialization.Util
 {
     internal class MiniPdbReader
     {
-        private static readonly HttpClient _httpClient = new();
+        private static readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromMinutes(5) };
 
         private readonly PeReader _peReader;
 
@@ -20,18 +21,26 @@ namespace FixPluginTypesSerialization.Util
 
         private static byte[] DownloadFromWeb(string url)
         {
-            Log.Info("Downloading : " + url);
-            
-            var httpResponse = _httpClient.GetAsync(url).GetAwaiter().GetResult();
-
-            Log.Info("Status Code : " + httpResponse.StatusCode);
-
-            if (httpResponse.StatusCode != System.Net.HttpStatusCode.OK)
+            try
             {
+                Log.Info("Downloading : " + url + "\nThis pdb file is needed for the plugin to work properly. This may take a while, relax, modding is coming.");
+
+                var httpResponse = _httpClient.GetAsync(url).GetAwaiter().GetResult();
+
+                Log.Info("Status Code : " + httpResponse.StatusCode);
+
+                if (httpResponse.StatusCode != System.Net.HttpStatusCode.OK)
+                {
+                    return null;
+                }
+
+                return httpResponse.Content.ReadAsByteArrayAsync().GetAwaiter().GetResult();
+            }
+            catch (TaskCanceledException)
+            {
+                Log.Info("Nice potato internet. Plugin may not work correctly.");
                 return null;
             }
-
-            return httpResponse.Content.ReadAsByteArrayAsync().GetAwaiter().GetResult();
         }
 
         internal MiniPdbReader(string targetFilePath)
