@@ -29,6 +29,8 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2019
 
         private unsafe MonoManagerStruct* _this => (MonoManagerStruct*)Pointer;
 
+        private AssemblyList _originalAssemblyNames;
+
         public List<AssemblyStringStruct> ManagedAssemblyList = new();
         public int AssemblyCount => ManagedAssemblyList.Count;
 
@@ -87,6 +89,8 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2019
                 s->data = ManagedAssemblyList[i].data;
             }
 
+            _originalAssemblyNames = _this->m_AssemblyNames;
+
             _this->m_AssemblyNames.ptr = (nint)nativeArray;
             _this->m_AssemblyNames.size = (ulong)ManagedAssemblyList.Count;
             _this->m_AssemblyNames.capacity = _this->m_AssemblyNames.size;
@@ -104,6 +108,11 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2019
 
                 Log.Warning($"Ass: {Marshal.PtrToStringAnsi(s->data, (int)s->size)} | label : {s->label:X}");
             }
+        }
+
+        public unsafe void RestoreOriginalAssemblyNamesArrayPtr()
+        {
+            _this->m_AssemblyNames = _originalAssemblyNames;
         }
     }
 }

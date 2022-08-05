@@ -13,5 +13,7 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.Default
         public unsafe void AllocNativeAssemblyListFromManaged();
 
         public unsafe void PrintAssemblies();
+
+        public void RestoreOriginalAssemblyNamesArrayPtr();
     }
 }

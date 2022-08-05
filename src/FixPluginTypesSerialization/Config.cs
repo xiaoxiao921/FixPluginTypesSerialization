@@ -16,7 +16,7 @@ namespace FixPluginTypesSerialization
         internal static ConfigEntry<string> LastDownloadedGUID =
             _config.Bind("Cache", nameof(LastDownloadedGUID),
                 "B8A8A8D3234C456C9B5E4D89FD56632C1",
-                "The GUID of the last downloaded UnityPlayer pdb file." + Environment.NewLine + 
+                "The GUID of the last downloaded UnityPlayer pdb file." + Environment.NewLine +
                 "If this GUID matches with the current one," + Environment.NewLine +
                 "the offsets for the functions below will be used" + Environment.NewLine +
                 "instead of generating them at runtime.");
@@ -38,5 +38,11 @@ namespace FixPluginTypesSerialization
                 "879A40",
                 $"The in-memory offset of the " +
                 $"{nameof(ReadStringFromFile)} function.");
+
+        internal static ConfigEntry<string> ScriptingManagerDeconstructorOffset =
+            _config.Bind("Cache", nameof(ScriptingManagerDeconstructorOffset),
+                "8C0B50",
+                $"The in-memory offset of the " +
+                $"{nameof(ScriptingManagerDeconstructor)} function.");
     }
 }
