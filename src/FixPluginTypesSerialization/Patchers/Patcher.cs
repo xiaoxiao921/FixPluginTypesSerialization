@@ -26,7 +26,7 @@ namespace FixPluginTypesSerialization.Patchers
         {
             IntPtr functionOffset;
 
-            if (pdbReader.UseCache)
+            if (pdbReader.UseCache && functionOffsetCache.Value != "INVALID")
             {
                 functionOffset = new IntPtr(Convert.ToInt64(functionOffsetCache.Value, 16));
             }
@@ -38,7 +38,7 @@ namespace FixPluginTypesSerialization.Patchers
 
                 functionOffsetCache.Value = functionOffset.ToString("X");
             }
-            
+
             functionOffset = (IntPtr)(unityModule.ToInt64() + functionOffset.ToInt64());
 
             Apply(functionOffset);

@@ -92,6 +92,14 @@ namespace FixPluginTypesSerialization.Util
 
                 var pdbCabPath = Path.Combine(tempPath, "pdb.cab");
 
+                try
+                {
+                    File.Delete(pdbCabPath);
+                }
+                catch (Exception)
+                {
+                }
+
                 Log.Info("Writing the compressed pdb to " + pdbCabPath);
                 File.WriteAllBytes(pdbCabPath, compressedPdbCab);
 
