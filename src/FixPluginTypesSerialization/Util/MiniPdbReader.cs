@@ -2,15 +2,21 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Net;
+#if NETSTANDARD2_0_OR_GREATER
 using System.Net.Http;
 using System.Threading.Tasks;
+#endif
 
 namespace FixPluginTypesSerialization.Util
 {
     internal class MiniPdbReader
     {
+#if NETSTANDARD2_0_OR_GREATER
         private static readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromMinutes(5) };
-
+#else
+        private static readonly WebClientWithTimeout _webClient = new();
+#endif
         private readonly PeReader _peReader;
 
         private byte[] _pdbFile;
@@ -21,9 +27,10 @@ namespace FixPluginTypesSerialization.Util
 
         private static byte[] DownloadFromWeb(string url)
         {
+            Log.Info("Downloading : " + url + "\nThis pdb file is needed for the plugin to work properly. This may take a while, relax, modding is coming.");
+#if NETSTANDARD2_0_OR_GREATER
             try
             {
-                Log.Info("Downloading : " + url + "\nThis pdb file is needed for the plugin to work properly. This may take a while, relax, modding is coming.");
 
                 var httpResponse = _httpClient.GetAsync(url).GetAwaiter().GetResult();
 
@@ -38,9 +45,20 @@ namespace FixPluginTypesSerialization.Util
             }
             catch (TaskCanceledException)
             {
-                Log.Info("Nice potato internet. Plugin may not work correctly.");
+                Log.Info("Could not download pdb. Plugin may not work correctly.");
                 return null;
             }
+#else
+            try
+            {
+                return _webClient.DownloadData(url);
+        }
+            catch (WebException)
+            {
+                Log.Info("Could not download pdb. Plugin may not work correctly.");
+                return null;
+            }
+#endif
         }
 
         internal MiniPdbReader(string targetFilePath)
@@ -82,7 +100,11 @@ namespace FixPluginTypesSerialization.Util
             const string unitySymbolServer = "http://symbolserver.unity3d.com/";
 
             var pdbCompressedPath = peReader.RsdsPdbFileName.TrimEnd('b') + '_';
+#if NET35
+            var pdbDownloadUrl = Path.Combine(Path.Combine(unitySymbolServer, peReader.RsdsPdbFileName), Path.Combine(peReader.PdbGuid, pdbCompressedPath));
+#else
             var pdbDownloadUrl = Path.Combine(unitySymbolServer, peReader.RsdsPdbFileName, peReader.PdbGuid, pdbCompressedPath);
+#endif
 
             var compressedPdbCab = DownloadFromWeb(pdbDownloadUrl);
 
@@ -125,9 +147,8 @@ namespace FixPluginTypesSerialization.Util
             {
                 IntPtr pdbStartAddress = (IntPtr)pdbFileStartPtr;
                 long sizeOfPdb = _pdbFile.Length;
-                long pdbEndAddress = (long)(pdbFileStartPtr + sizeOfPdb);
 
-                var match = bytePatterns.Select(p => new { p, res = p.Match(pdbStartAddress, pdbEndAddress) })
+                var match = bytePatterns.Select(p => new { p, res = p.Match(pdbStartAddress, sizeOfPdb) })
                 .FirstOrDefault(m => m.res > 0);
                 if (match == null)
                 {
@@ -150,5 +171,19 @@ namespace FixPluginTypesSerialization.Util
                 return new IntPtr(functionOffset);
             }
         }
+
+#if NET35 || NET40
+        private class WebClientWithTimeout : WebClient
+        {
+            public TimeSpan Timeout { get; set; } = TimeSpan.FromMinutes(5);
+
+            protected override WebRequest GetWebRequest(Uri address)
+            {
+                var request = base.GetWebRequest(address);
+                request.Timeout = (int)Timeout.TotalMilliseconds;
+                return request;
+            }
+        }
+#endif
     }
 }

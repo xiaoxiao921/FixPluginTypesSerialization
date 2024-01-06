@@ -11,5 +11,7 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.Default
         /// </summary>
         /// <param name="constCharPtr"></param>
         public unsafe void RestoreOriginalString(IntPtr constCharPtr);
+
+        public unsafe string ToStringAnsi();
     }
 }

@@ -10,6 +10,8 @@ namespace FixPluginTypesSerialization.Patchers
         protected abstract BytePattern[] PdbPatterns { get; }
         protected abstract BytePattern[] SigPatterns { get; }
 
+        public bool IsApplied { get; protected set; }
+
         public void Patch(IntPtr unityModule, int moduleSize, MiniPdbReader pdbReader, ConfigEntry<string> functionOffsetCache)
         {
             if (pdbReader.IsPdbAvailable)
@@ -29,13 +31,20 @@ namespace FixPluginTypesSerialization.Patchers
             if (pdbReader.UseCache && functionOffsetCache.Value != "INVALID")
             {
                 functionOffset = new IntPtr(Convert.ToInt64(functionOffsetCache.Value, 16));
+
+                if (functionOffset == IntPtr.Zero)
+                {
+                    return;
+                }
             }
             else
             {
                 functionOffset = pdbReader.FindFunctionOffset(PdbPatterns);
                 if (functionOffset == IntPtr.Zero)
+                {
+                    functionOffsetCache.Value = "00";
                     return;
-
+                }
                 functionOffsetCache.Value = functionOffset.ToString("X");
             }
 
@@ -59,7 +68,6 @@ namespace FixPluginTypesSerialization.Patchers
                 .FirstOrDefault(m => m.res > 0);
             if (match == null)
             {
-                Log.Error("No sig match found, cannot hook ! Please report it to the r2api devs!");
                 return IntPtr.Zero;
             }
 

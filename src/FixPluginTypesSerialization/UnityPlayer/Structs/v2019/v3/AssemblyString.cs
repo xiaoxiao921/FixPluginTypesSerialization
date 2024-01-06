@@ -1,11 +1,12 @@
 ﻿using FixPluginTypesSerialization.Patchers;
 using FixPluginTypesSerialization.UnityPlayer.Structs.Default;
+using FixPluginTypesSerialization.Util;
 using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2019
+namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2019.v3
 {
     // core::StringStorageDefault<char> from ida -> produced C header file
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
@@ -53,7 +54,7 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2019
 
                     var newNativePath = Marshal.StringToHGlobalAnsi(newPath);
 
-                    var originalData = ((IntPtr)_this, _this->data, _this->size);
+                    var originalData = new OriginalPathData((IntPtr)_this, _this->data, _this->size);
                     ReadStringFromFile.ModifiedPathsToOriginalPaths.Add(newNativePath, originalData);
 
                     _this->data = newNativePath;
@@ -72,11 +73,21 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2019
             // So that Unity can call free_alloc_internal on it
             if (ReadStringFromFile.ModifiedPathsToOriginalPaths.TryGetValue(constCharPtr, out var originalData))
             {
-                var assemblyString = (AssemblyStringStruct*)originalData.Item1;
-                assemblyString->data = originalData.Item2;
-                assemblyString->size = originalData.Item3;
-                assemblyString->capacity = originalData.Item3;
+                var assemblyString = (AssemblyStringStruct*)originalData.thisRef;
+                assemblyString->data = originalData.thisDataRef;
+                assemblyString->size = originalData.size;
+                assemblyString->capacity = originalData.size;
             }
+        }
+
+        public unsafe string ToStringAnsi()
+        {
+            if (!_this->IsValid())
+            {
+                return null;
+            }
+
+            return Marshal.PtrToStringAnsi(_this->data, (int)_this->size);
         }
     }
 }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2018
+namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2018.v1
 {
     [StructLayout(LayoutKind.Explicit)]
     public struct MonoManagerStruct
@@ -12,7 +12,7 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2018
         [FieldOffset(0x198)] public AssemblyList m_AssemblyNames;
     }
 
-    [ApplicableToUnityVersionsSince("5.0.0")]
+    [ApplicableToUnityVersionsSince("2018.1.0")]
     public class MonoManager : IMonoManager
     {
         public MonoManager()
@@ -74,7 +74,7 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2018
 
         public unsafe void AllocNativeAssemblyListFromManaged()
         {
-            var nativeArray = (AssemblyStringStruct*)Marshal.AllocHGlobal(Marshal.SizeOf<AssemblyStringStruct>() * ManagedAssemblyList.Count);
+            var nativeArray = (AssemblyStringStruct*)Marshal.AllocHGlobal(Marshal.SizeOf(typeof(AssemblyStringStruct)) * ManagedAssemblyList.Count);
 
             var i = 0;
             for (AssemblyStringStruct* s = nativeArray; i < ManagedAssemblyList.Count; s++, i++)

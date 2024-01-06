@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace FixPluginTypesSerialization.Util
 {
@@ -8,6 +9,12 @@ namespace FixPluginTypesSerialization.Util
         {
             key = tuple.Key;
             value = tuple.Value;
+        }
+
+        public static void Deconstruct(this VersionedHandler versionedHandler, out Version version, out object handler)
+        {
+            version = versionedHandler.version;
+            handler = versionedHandler.handler;
         }
     }
 }

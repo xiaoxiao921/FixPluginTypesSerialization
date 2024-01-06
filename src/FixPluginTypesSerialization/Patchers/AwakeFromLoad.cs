@@ -21,7 +21,8 @@ namespace FixPluginTypesSerialization.Patchers
 
         protected override BytePattern[] PdbPatterns { get; } =
         {
-            Encoding.ASCII.GetBytes("MonoManager::" + nameof(AwakeFromLoad))
+            Encoding.ASCII.GetBytes("MonoManager::" + nameof(AwakeFromLoad)),
+            Encoding.ASCII.GetBytes(nameof(AwakeFromLoad) + "@MonoManager")
         };
 
         protected override BytePattern[] SigPatterns { get; } =
@@ -38,11 +39,13 @@ namespace FixPluginTypesSerialization.Patchers
 
             original = _detour.GenerateTrampoline<AwakeFromLoadDelegate>();
             _detour.Apply();
+
+            IsApplied = true;
         }
 
         internal static void Dispose()
         {
-            _detour.Dispose();
+            _detour?.Dispose();
         }
 
         private static unsafe void OnAwakeFromLoad(IntPtr _monoManager, int awakeMode)
@@ -64,6 +67,10 @@ namespace FixPluginTypesSerialization.Patchers
             // Dispose the ReadStringFromFile detour as we don't need it anymore
             // and could hog resources for nothing otherwise
             ReadStringFromFile.Dispose();
+
+            // Dispose IsFileCreated detour as we don't need it anymore
+            // and could hog resources for nothing otherwise
+            IsFileCreated.Dispose();
         }
     }
 }

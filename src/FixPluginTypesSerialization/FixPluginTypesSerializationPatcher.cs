@@ -16,6 +16,7 @@ namespace FixPluginTypesSerialization
 
         public static List<string> PluginPaths =
             Directory.GetFiles(BepInEx.Paths.PluginPath, "*.dll", SearchOption.AllDirectories).Where(f => IsNetAssembly(f)).ToList();
+        public static List<string> PluginNames = PluginPaths.Select(p => Path.GetFileName(p)).ToList();
 
         public static bool IsNetAssembly(string fileName)
         {
@@ -58,6 +59,11 @@ namespace FixPluginTypesSerialization
         private static unsafe void DetourUnityPlayer()
         {
             var unityDllPath = Path.Combine(BepInEx.Paths.GameRootPath, "UnityPlayer.dll");
+            //Older Unity builds had all functionality in .exe instead of UnityPlayer.dll
+            if (!File.Exists(unityDllPath))
+            {
+                unityDllPath = BepInEx.Paths.ExecutablePath;
+            }
 
             var pdbReader = new MiniPdbReader(unityDllPath);
 
@@ -72,11 +78,16 @@ namespace FixPluginTypesSerialization
 
             var awakeFromLoadPatcher = new AwakeFromLoad();
             var isAssemblyCreatedPatcher = new IsAssemblyCreated();
+            var isFileCreatedPatcher = new IsFileCreated();
             var readStringFromFilePatcher = new ReadStringFromFile();
             var scriptingManagerDeconstructorPatcher = new ScriptingManagerDeconstructor();
 
             awakeFromLoadPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.MonoManagerAwakeFromLoadOffset);
             isAssemblyCreatedPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.MonoManagerIsAssemblyCreatedOffset);
+            if (!isAssemblyCreatedPatcher.IsApplied)
+            {
+                isFileCreatedPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.IsFileCreatedOffset);
+            }
             readStringFromFilePatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.ReadStringFromFileOffset);
             scriptingManagerDeconstructorPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.ScriptingManagerDeconstructorOffset);
         }

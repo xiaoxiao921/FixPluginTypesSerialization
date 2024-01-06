@@ -1,7 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using FixPluginTypesSerialization.Patchers;
-using FixPluginTypesSerialization.UnityPlayer.Structs.v2018;
+using FixPluginTypesSerialization.UnityPlayer.Structs.v2018.v1;
 using System;
 using System.IO;
 
@@ -32,6 +32,12 @@ namespace FixPluginTypesSerialization
                 "8ECFB0",
                 $"The in-memory offset of the " +
                 $"{nameof(MonoManager) + "::" + nameof(IsAssemblyCreated)} function.");
+
+        internal static ConfigEntry<string> IsFileCreatedOffset =
+            _config.Bind("Cache", nameof(IsFileCreatedOffset),
+                "00",
+                $"The in-memory offset of the " +
+                $"{nameof(IsFileCreated)} function.");
 
         internal static ConfigEntry<string> ReadStringFromFileOffset =
             _config.Bind("Cache", nameof(ReadStringFromFileOffset),

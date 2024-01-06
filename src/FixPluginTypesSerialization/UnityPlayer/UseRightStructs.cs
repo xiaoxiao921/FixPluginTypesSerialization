@@ -1,4 +1,5 @@
 ﻿using FixPluginTypesSerialization.UnityPlayer.Structs.Default;
+using FixPluginTypesSerialization.Util;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -26,7 +27,7 @@ namespace FixPluginTypesSerialization.UnityPlayer
     public static class UseRightStructs
     {
         private static readonly Type[] InterfacesOfInterest;
-        private static readonly Dictionary<Type, List<(Version Version, object Handler)>> VersionedHandlers = new();
+        private static readonly Dictionary<Type, List<VersionedHandler>> VersionedHandlers = new();
         private static readonly Dictionary<Type, object> CurrentHandlers = new();
 
         private static Version _unityVersion;
@@ -55,7 +56,7 @@ namespace FixPluginTypesSerialization.UnityPlayer
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(version))
+                if (Polyfills.StringIsNullOrWhiteSpace(version))
                     return false;
 
                 var parts = version.Split('.');
@@ -106,7 +107,7 @@ namespace FixPluginTypesSerialization.UnityPlayer
                     {
                         if (InterfacesOfInterest.Contains(i))
                         {
-                            VersionedHandlers[i].Add((Version.Parse(startVersion.StartVersion), instance));
+                            VersionedHandlers[i].Add(new VersionedHandler(Polyfills.VersionParse(startVersion.StartVersion), instance));
                         }
                     }
                 }
@@ -114,7 +115,7 @@ namespace FixPluginTypesSerialization.UnityPlayer
 
             foreach (var handlerList in VersionedHandlers.Values)
             {
-                handlerList.Sort((a, b) => -a.Version.CompareTo(b.Version));
+                handlerList.Sort((a, b) => -a.version.CompareTo(b.version));
             }
 
             GatherUnityVersionSpecificHandlers();

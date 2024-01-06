@@ -17,7 +17,8 @@ namespace FixPluginTypesSerialization.Patchers
 
         protected override BytePattern[] PdbPatterns { get; } =
         {
-            Encoding.ASCII.GetBytes("MonoManager::" + nameof(IsAssemblyCreated))
+            Encoding.ASCII.GetBytes("MonoManager::" + nameof(IsAssemblyCreated)),
+            Encoding.ASCII.GetBytes(nameof(IsAssemblyCreated) + "@MonoManager"),
         };
 
         protected override BytePattern[] SigPatterns { get; } =
@@ -36,7 +37,9 @@ namespace FixPluginTypesSerialization.Patchers
             _detour = new NativeDetour(from, hookPtr, new NativeDetourConfig {ManualApply = true});
 
             original = _detour.GenerateTrampoline<IsAssemblyCreatedDelegate>();
-            _detour.Apply();
+            _detour?.Apply();
+
+            IsApplied = true;
         }
 
         internal static void Dispose()

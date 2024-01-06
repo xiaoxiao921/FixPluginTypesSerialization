@@ -538,12 +538,19 @@ namespace FixPluginTypesSerialization.Util
 
                 if (currentInt == RSDS.Magic)
                 {
+#if NET35 || NET40
+                    var rsdsStructByteArray = reader.ReadBytes(Marshal.SizeOf(typeof(RSDS)));
+#else
                     var rsdsStructByteArray = reader.ReadBytes(Marshal.SizeOf<RSDS>());
-
+#endif
                     var handle = GCHandle.Alloc(rsdsStructByteArray, GCHandleType.Pinned);
                     try
                     {
+#if NET35 || NET40
+                        var rsdsStruct = (RSDS)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(RSDS));
+#else
                         var rsdsStruct = Marshal.PtrToStructure<RSDS>(handle.AddrOfPinnedObject());
+#endif
 
                         pdbGuid = new Guid(rsdsStruct.Guid).ToString("N").ToUpperInvariant() + rsdsStruct.Age;
 
@@ -620,7 +627,7 @@ namespace FixPluginTypesSerialization.Util
             return theStructure;
         }
 
-        #endregion Public Methods
+#endregion Public Methods
 
         #region Properties
 

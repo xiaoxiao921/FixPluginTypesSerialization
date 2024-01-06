@@ -17,7 +17,7 @@ namespace FixPluginTypesSerialization.Patchers
         private static NativeDetour _detourReadStringFromFile;
         private static ReadStringFromFileDelegate originalReadStringFromFile;
 
-        private static readonly IntPtr Mono = NativeLibraryHelper.OpenLibrary("mono-2.0-bdwgc.dll");
+        private static readonly IntPtr Mono = OpenMonoLibrary();
         private static readonly IntPtr mono_assembly_load_from_full_fn = Mono.GetFunction("mono_assembly_load_from_full");
 
         private delegate IntPtr mono_assembly_load_from_full_delegate(IntPtr image, IntPtr constCharFName, IntPtr status, IntPtr refonly);
@@ -25,7 +25,7 @@ namespace FixPluginTypesSerialization.Patchers
         private static NativeDetour _monoDetour;
         private static mono_assembly_load_from_full_delegate originalMonoAssemblyLoadFromFull;
 
-        internal static readonly Dictionary<IntPtr, (IntPtr, IntPtr, ulong)> ModifiedPathsToOriginalPaths = new();
+        internal static readonly Dictionary<IntPtr, OriginalPathData> ModifiedPathsToOriginalPaths = new();
 
         protected override BytePattern[] PdbPatterns { get; } =
         {
@@ -43,6 +43,8 @@ namespace FixPluginTypesSerialization.Patchers
         {
             ApplyReadStringFromFileDetour(from);
             ApplyMonoDetour();
+
+            IsApplied = true;
         }
 
         private void ApplyReadStringFromFileDetour(IntPtr from)
@@ -107,6 +109,19 @@ namespace FixPluginTypesSerialization.Patchers
             constCharFName.RestoreOriginalString(constCharFNamePtr);
 
             return res;
+        }
+
+        private static IntPtr OpenMonoLibrary()
+        {
+            var ptr = NativeLibraryHelper.OpenLibrary("mono-2.0-bdwgc.dll");
+            if (ptr != IntPtr.Zero)
+            {
+                return ptr;
+            }
+
+            ptr = NativeLibraryHelper.OpenLibrary("mono.dll");
+
+            return ptr;
         }
     }
 }
