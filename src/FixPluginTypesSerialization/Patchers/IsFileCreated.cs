@@ -18,6 +18,8 @@ namespace FixPluginTypesSerialization.Patchers
 
         private static NativeDetour _detour;
 
+        internal static bool IsApplied { get; private set; }
+
         protected override BytePattern[] PdbPatterns { get; } =
         {
             Encoding.ASCII.GetBytes(nameof(IsFileCreated)),
@@ -43,11 +45,12 @@ namespace FixPluginTypesSerialization.Patchers
         internal static void Dispose()
         {
             _detour?.Dispose();
+            IsApplied = false;
         }
 
         private static unsafe bool OnIsFileCreated(IntPtr str)
         {
-            var assemblyString = UseRightStructs.GetStruct<IAssemblyString>(str);
+            var assemblyString = UseRightStructs.GetStruct<IRelativePathString>(str);
             var actualString = assemblyString.ToStringAnsi();
 
             if (actualString is not null && FixPluginTypesSerializationPatcher.PluginNames.Any(actualString.EndsWith))

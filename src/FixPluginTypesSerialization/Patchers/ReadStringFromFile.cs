@@ -17,15 +17,7 @@ namespace FixPluginTypesSerialization.Patchers
         private static NativeDetour _detourReadStringFromFile;
         private static ReadStringFromFileDelegate originalReadStringFromFile;
 
-        private static readonly IntPtr Mono = OpenMonoLibrary();
-        private static readonly IntPtr mono_assembly_load_from_full_fn = Mono.GetFunction("mono_assembly_load_from_full");
-
-        private delegate IntPtr mono_assembly_load_from_full_delegate(IntPtr image, IntPtr constCharFName, IntPtr status, IntPtr refonly);
-
-        private static NativeDetour _monoDetour;
-        private static mono_assembly_load_from_full_delegate originalMonoAssemblyLoadFromFull;
-
-        internal static readonly Dictionary<IntPtr, OriginalPathData> ModifiedPathsToOriginalPaths = new();
+        internal static bool IsApplied { get; private set; }
 
         protected override BytePattern[] PdbPatterns { get; } =
         {
@@ -41,87 +33,40 @@ namespace FixPluginTypesSerialization.Patchers
 
         protected override unsafe void Apply(IntPtr from)
         {
-            ApplyReadStringFromFileDetour(from);
-            ApplyMonoDetour();
+            if (UseRightStructs.UnityVersion < new Version(2020, 2))
+            {
+                return;
+            }
 
-            IsApplied = true;
-        }
-
-        private void ApplyReadStringFromFileDetour(IntPtr from)
-        {
             var hookPtr = Marshal.GetFunctionPointerForDelegate(new ReadStringFromFileDelegate(OnReadStringFromFile));
             _detourReadStringFromFile = new NativeDetour(from, hookPtr, new NativeDetourConfig { ManualApply = true });
 
             originalReadStringFromFile = _detourReadStringFromFile.GenerateTrampoline<ReadStringFromFileDelegate>();
             _detourReadStringFromFile.Apply();
-        }
 
-        private void ApplyMonoDetour()
-        {
-            var hookPtr = Marshal.GetFunctionPointerForDelegate(new mono_assembly_load_from_full_delegate(OnMonoAssemblyLoadFromFull));
-            _monoDetour = new NativeDetour(mono_assembly_load_from_full_fn, hookPtr, new NativeDetourConfig { ManualApply = true });
-
-            originalMonoAssemblyLoadFromFull = _monoDetour.GenerateTrampoline<mono_assembly_load_from_full_delegate>();
-            _monoDetour.Apply();
+            IsApplied = true;
         }
 
         internal static void Dispose()
-        {
-            DisposeDetours();
-        }
-
-        private static void DisposeDetours()
         {
             if (_detourReadStringFromFile != null && _detourReadStringFromFile.IsApplied)
             {
                 _detourReadStringFromFile.Dispose();
             }
-
-            if (_monoDetour != null && _monoDetour.IsApplied)
-            {
-                _monoDetour.Dispose();
-            }
-
-            // Free the allocated paths from FixAbsolutePath
-            foreach (var (allocatedPath, _) in ModifiedPathsToOriginalPaths)
-            {
-                Marshal.FreeHGlobal(allocatedPath);
-            }
+            IsApplied = false;
         }
 
         private static unsafe bool OnReadStringFromFile(IntPtr outData, IntPtr assemblyStringPathName)
         {
-            var assemblyString = UseRightStructs.GetStruct<IAssemblyString>(assemblyStringPathName);
-
-            assemblyString.FixAbsolutePath();
-
             var res = originalReadStringFromFile(outData, assemblyStringPathName);
 
-            return res;
-        }
-
-        private static unsafe IntPtr OnMonoAssemblyLoadFromFull(IntPtr image, IntPtr constCharFNamePtr, IntPtr status, IntPtr refonly)
-        {
-            var res = originalMonoAssemblyLoadFromFull(image, constCharFNamePtr, status, refonly);
-
-            var constCharFName = UseRightStructs.GetStruct<IAssemblyString>(constCharFNamePtr);
-
-            constCharFName.RestoreOriginalString(constCharFNamePtr);
-
-            return res;
-        }
-
-        private static IntPtr OpenMonoLibrary()
-        {
-            var ptr = NativeLibraryHelper.OpenLibrary("mono-2.0-bdwgc.dll");
-            if (ptr != IntPtr.Zero)
+            if (res)
             {
-                return ptr;
+                var assemblyString = UseRightStructs.GetStruct<IRelativePathString>(assemblyStringPathName);
+                assemblyString.AppendToScriptingAssemblies(outData, FixPluginTypesSerializationPatcher.PluginNames);
             }
 
-            ptr = NativeLibraryHelper.OpenLibrary("mono.dll");
-
-            return ptr;
+            return res;
         }
     }
 }

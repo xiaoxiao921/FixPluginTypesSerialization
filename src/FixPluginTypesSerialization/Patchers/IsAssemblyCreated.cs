@@ -15,6 +15,8 @@ namespace FixPluginTypesSerialization.Patchers
 
         private static NativeDetour _detour;
 
+        internal static bool IsApplied { get; private set; }
+
         protected override BytePattern[] PdbPatterns { get; } =
         {
             Encoding.ASCII.GetBytes("MonoManager::" + nameof(IsAssemblyCreated)),
@@ -44,7 +46,8 @@ namespace FixPluginTypesSerialization.Patchers
 
         internal static void Dispose()
         {
-            _detour.Dispose();
+            _detour?.Dispose();
+            IsApplied = false;
         }
 
         private static unsafe bool OnIsAssemblyCreated(IntPtr _monoManager, int index)

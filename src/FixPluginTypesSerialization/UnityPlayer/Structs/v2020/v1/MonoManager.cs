@@ -1,7 +1,7 @@
 ﻿using FixPluginTypesSerialization.UnityPlayer.Structs.Default;
+using FixPluginTypesSerialization.Util;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Runtime.InteropServices;
 
 namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2020.v1
@@ -9,7 +9,7 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2020.v1
     [StructLayout(LayoutKind.Explicit)]
     public struct MonoManagerStruct
     {
-        [FieldOffset(0x1C0)] public AssemblyList m_AssemblyNames;
+        [FieldOffset(0x1c0)] public DynamicArrayData m_AssemblyNames;
     }
 
     [ApplicableToUnityVersionsSince("2020.1.0")]
@@ -29,85 +29,29 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2020.v1
 
         private unsafe MonoManagerStruct* _this => (MonoManagerStruct*)Pointer;
 
-        private AssemblyList _originalAssemblyNames;
+        private DynamicArrayData _originalAssemblyNames;
 
-        public List<AssemblyStringStruct> ManagedAssemblyList = new();
+        public List<StringStorageDefaultV1> ManagedAssemblyList = new();
         public int AssemblyCount => ManagedAssemblyList.Count;
 
         public unsafe void CopyNativeAssemblyListToManaged()
         {
-            ManagedAssemblyList.Clear();
-
-            ulong i = 0;
-            for (AssemblyStringStruct* s = (AssemblyStringStruct*)_this->m_AssemblyNames.ptr;
-                i < _this->m_AssemblyNames.size;
-                s++, i++)
-            {
-                var newAssemblyString = new AssemblyStringStruct
-                {
-                    capacity = s->capacity,
-                    extra = s->extra,
-                    label = s->label,
-                    size = s->size,
-                    data = s->data
-                };
-
-                ManagedAssemblyList.Add(newAssemblyString);
-            }
+            MonoManagerCommon.CopyNativeAssemblyListToManagedV2(ManagedAssemblyList, _this->m_AssemblyNames);
         }
 
         public void AddAssembliesToManagedList(List<string> pluginAssemblyPaths)
         {
-            foreach (var pluginAssemblyPath in pluginAssemblyPaths)
-            {
-                var pluginAssemblyName = Path.GetFileName(pluginAssemblyPath);
-                var length = (ulong)pluginAssemblyName.Length;
-
-                var assemblyString = new AssemblyStringStruct
-                {
-                    label = AssemblyStringStruct.ValidStringLabel,
-                    data = Marshal.StringToHGlobalAnsi(pluginAssemblyName),
-                    capacity = length,
-                    size = length
-                };
-
-                ManagedAssemblyList.Add(assemblyString);
-            }
+            MonoManagerCommon.AddAssembliesToManagedListV1(ManagedAssemblyList, pluginAssemblyPaths);
         }
 
         public unsafe void AllocNativeAssemblyListFromManaged()
         {
-            var nativeArray = (AssemblyStringStruct*)Marshal.AllocHGlobal(Marshal.SizeOf(typeof(AssemblyStringStruct)) * ManagedAssemblyList.Count);
-
-            var i = 0;
-            for (AssemblyStringStruct* s = nativeArray; i < ManagedAssemblyList.Count; s++, i++)
-            {
-                s->label = ManagedAssemblyList[i].label;
-                s->size = ManagedAssemblyList[i].size;
-                s->capacity = ManagedAssemblyList[i].capacity;
-                s->extra = ManagedAssemblyList[i].extra;
-                s->data = ManagedAssemblyList[i].data;
-            }
-
-            _originalAssemblyNames = _this->m_AssemblyNames;
-
-            _this->m_AssemblyNames.ptr = (nint)nativeArray;
-            _this->m_AssemblyNames.size = (ulong)ManagedAssemblyList.Count;
-            _this->m_AssemblyNames.capacity = _this->m_AssemblyNames.size;
+            MonoManagerCommon.AllocNativeAssemblyListFromManagedV2(ManagedAssemblyList, &_this->m_AssemblyNames, out _originalAssemblyNames);
         }
 
         public unsafe void PrintAssemblies()
         {
-            ulong i = 0;
-            for (AssemblyStringStruct* s = (AssemblyStringStruct*)_this->m_AssemblyNames.ptr;
-                i < _this->m_AssemblyNames.size;
-                s++, i++)
-            {
-                if (!s->IsValid())
-                    continue;
-
-                Log.Warning($"Ass: {Marshal.PtrToStringAnsi(s->data, (int)s->size)} | label : {s->label:X}");
-            }
+            MonoManagerCommon.PrintAssembliesV2(_this->m_AssemblyNames);
         }
 
         public unsafe void RestoreOriginalAssemblyNamesArrayPtr()

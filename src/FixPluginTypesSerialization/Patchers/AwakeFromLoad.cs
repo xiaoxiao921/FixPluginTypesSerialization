@@ -18,6 +18,7 @@ namespace FixPluginTypesSerialization.Patchers
         private static NativeDetour _detour;
 
         internal static IMonoManager CurrentMonoManager;
+        internal static bool IsApplied { get; private set; }
 
         protected override BytePattern[] PdbPatterns { get; } =
         {
@@ -46,31 +47,34 @@ namespace FixPluginTypesSerialization.Patchers
         internal static void Dispose()
         {
             _detour?.Dispose();
+            IsApplied = false;
         }
 
         private static unsafe void OnAwakeFromLoad(IntPtr _monoManager, int awakeMode)
         {
-            CurrentMonoManager = UseRightStructs.GetStruct<IMonoManager>(_monoManager);
+            if (!ReadStringFromFile.IsApplied)
+            {
+                CurrentMonoManager = UseRightStructs.GetStruct<IMonoManager>(_monoManager);
 
-            CurrentMonoManager.CopyNativeAssemblyListToManaged();
+                CurrentMonoManager.CopyNativeAssemblyListToManaged();
 
-            IsAssemblyCreated.VanillaAssemblyCount = CurrentMonoManager.AssemblyCount;
+                IsAssemblyCreated.VanillaAssemblyCount = CurrentMonoManager.AssemblyCount;
 
-            CurrentMonoManager.AddAssembliesToManagedList(FixPluginTypesSerializationPatcher.PluginPaths);
+                CurrentMonoManager.AddAssembliesToManagedList(FixPluginTypesSerializationPatcher.PluginPaths);
 
-            CurrentMonoManager.AllocNativeAssemblyListFromManaged();
+                CurrentMonoManager.AllocNativeAssemblyListFromManaged();
 
-            //CurrentMonoManager.PrintAssemblies();
+                //CurrentMonoManager.PrintAssemblies();
+            }
 
             original(_monoManager, awakeMode);
 
-            // Dispose the ReadStringFromFile detour as we don't need it anymore
+            // Dispose detours as we don't need them anymore
             // and could hog resources for nothing otherwise
             ReadStringFromFile.Dispose();
-
-            // Dispose IsFileCreated detour as we don't need it anymore
-            // and could hog resources for nothing otherwise
             IsFileCreated.Dispose();
+            PathToAbsolutePath.Dispose();
+            IsAssemblyCreated.Dispose();
         }
     }
 }

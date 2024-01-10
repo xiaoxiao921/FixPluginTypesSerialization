@@ -44,8 +44,20 @@ namespace FixPluginTypesSerialization.UnityPlayer
             }
         }
 
+        public static int LabelMemStringId { get; private set; }
+
         private static void InitializeUnityVersion()
         {
+            if (!Polyfills.StringIsNullOrWhiteSpace(Config.UnityVersionOverride.Value))
+            {
+                if (TryInitializeUnityVersion(Config.UnityVersionOverride.Value))
+                {
+                    Log.Debug($"Unity version obtained from config file");
+                    return;
+                }
+                Log.Error($"Unity version {Config.UnityVersionOverride.Value} has incorrect format.");
+            }
+
             if (TryInitializeUnityVersion(Process.GetCurrentProcess().MainModule.FileVersionInfo.FileVersion))
                 Log.Debug($"Unity version obtained from main application module.");
             else
@@ -119,6 +131,7 @@ namespace FixPluginTypesSerialization.UnityPlayer
             }
 
             GatherUnityVersionSpecificHandlers();
+            SetUnityVersionSpecificMemStringId();
         }
 
         private static void GatherUnityVersionSpecificHandlers()
@@ -172,6 +185,46 @@ namespace FixPluginTypesSerialization.UnityPlayer
             @struct.Pointer = ptr;
 
             return @struct;
+        }
+
+        private static void SetUnityVersionSpecificMemStringId()
+        {
+            if (UnityVersion >= new Version(2021, 1))
+            {
+                LabelMemStringId = 0x49;
+            }
+            else if (UnityVersion >= new Version(2020, 2))
+            {
+                LabelMemStringId = 0x2B;
+            }
+            else if (UnityVersion >= new Version(2020, 1))
+            {
+                LabelMemStringId = 0x2A;
+            }
+            else if (UnityVersion >= new Version(2019, 4))
+            {
+                LabelMemStringId = 0x2B;
+            }
+            else if (UnityVersion >= new Version(2019, 3))
+            {
+                LabelMemStringId = 0x2A;
+            }
+            else if (UnityVersion >= new Version(2019, 1))
+            {
+                LabelMemStringId = 0x2B;
+            }
+            else if (UnityVersion >= new Version(2018, 3))
+            {
+                LabelMemStringId = 0x45;
+            }
+            else if (UnityVersion >= new Version(2017, 2))
+            {
+                LabelMemStringId = 0x44;
+            }
+            else
+            {
+                LabelMemStringId = 0x42;
+            }
         }
     }
 }

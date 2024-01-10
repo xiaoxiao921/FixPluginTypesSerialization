@@ -14,6 +14,8 @@ namespace FixPluginTypesSerialization.Patchers
         private static NativeDetour _detour;
         private static ScriptingManagerDeconstructorDelegate orig;
 
+        internal static bool IsApplied { get; private set; }
+
         protected override BytePattern[] PdbPatterns { get; } =
         {
             Encoding.ASCII.GetBytes("ScriptingManager::~ScriptingManager"),
@@ -43,6 +45,7 @@ namespace FixPluginTypesSerialization.Patchers
         internal static void Dispose()
         {
             DisposeDetours();
+            IsApplied = false;
         }
 
         private static void DisposeDetours()

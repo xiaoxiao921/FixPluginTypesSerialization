@@ -14,8 +14,10 @@ namespace FixPluginTypesSerialization
     {
         public static IEnumerable<string> TargetDLLs { get; } = new string[0];
 
-        public static List<string> PluginPaths =
-            Directory.GetFiles(BepInEx.Paths.PluginPath, "*.dll", SearchOption.AllDirectories).Where(f => IsNetAssembly(f)).ToList();
+        public static List<string> PluginPaths = 
+            Directory.GetFiles(BepInEx.Paths.PluginPath, "*.dll", SearchOption.AllDirectories)
+            .Where(f => IsNetAssembly(f))
+            .ToList();
         public static List<string> PluginNames = PluginPaths.Select(p => Path.GetFileName(p)).ToList();
 
         public static bool IsNetAssembly(string fileName)
@@ -76,20 +78,27 @@ namespace FixPluginTypesSerialization
                 .Cast<ProcessModule>()
                 .FirstOrDefault(IsUnityPlayer) ?? Process.GetCurrentProcess().MainModule;
 
+            CommonUnityFunctions.Init(proc.BaseAddress, proc.ModuleMemorySize, pdbReader);
+
             var awakeFromLoadPatcher = new AwakeFromLoad();
             var isAssemblyCreatedPatcher = new IsAssemblyCreated();
             var isFileCreatedPatcher = new IsFileCreated();
             var readStringFromFilePatcher = new ReadStringFromFile();
             var scriptingManagerDeconstructorPatcher = new ScriptingManagerDeconstructor();
-
+            var pathToAbsolutePathPatcher = new PathToAbsolutePath();
+            
             awakeFromLoadPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.MonoManagerAwakeFromLoadOffset);
             isAssemblyCreatedPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.MonoManagerIsAssemblyCreatedOffset);
-            if (!isAssemblyCreatedPatcher.IsApplied)
+            if (!IsAssemblyCreated.IsApplied)
             {
                 isFileCreatedPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.IsFileCreatedOffset);
             }
             readStringFromFilePatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.ReadStringFromFileOffset);
-            scriptingManagerDeconstructorPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.ScriptingManagerDeconstructorOffset);
+            pathToAbsolutePathPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.PathToAbsolutePathOffset);
+            if (!ReadStringFromFile.IsApplied)
+            {
+                scriptingManagerDeconstructorPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.ScriptingManagerDeconstructorOffset);
+            }
         }
     }
 }
