@@ -46,12 +46,6 @@ namespace FixPluginTypesSerialization
                 $"The in-memory offset of the " +
                 $"{nameof(IsFileCreated)} function.");
 
-        internal static ConfigEntry<string> ReadStringFromFileOffset =
-            _config.Bind("Cache", nameof(ReadStringFromFileOffset),
-                "00",
-                $"The in-memory offset of the " +
-                $"{nameof(ReadStringFromFile)} function.");
-
         internal static ConfigEntry<string> ScriptingManagerDeconstructorOffset =
             _config.Bind("Cache", nameof(ScriptingManagerDeconstructorOffset),
                 "00",
@@ -75,5 +69,11 @@ namespace FixPluginTypesSerialization
                 "00",
                 $"The in-memory offset of the " +
                 $"malloc_internal function.");
+
+        internal static ConfigEntry<string> ScriptingAssembliesOffset =
+            _config.Bind("Cache", nameof(ScriptingAssembliesOffset),
+                "00",
+                $"The in-memory offset of the " +
+                $"m_ScriptingAssemblies global field.");
     }
 }

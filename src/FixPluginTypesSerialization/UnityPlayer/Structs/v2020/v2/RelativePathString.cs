@@ -64,42 +64,6 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2020.v2
             return true;
         }
 
-        public unsafe void AppendToScriptingAssemblies(IntPtr json, IEnumerable<string> pluginNames)
-        {
-            var path = ToStringAnsi();
-            if (!path.EndsWith("ScriptingAssemblies.json", StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
-            var jsonPtr = (StringStorageDefaultV1*)json;
-            var data = jsonPtr->data;
-            if (data == 0)
-            {
-                data = (nint)jsonPtr + 8;
-            }
-
-            var jsonStr = Marshal.PtrToStringAnsi(data, (int)jsonPtr->size);
-            var closingBracketIndex = jsonStr.IndexOf(']');
-
-            var stringBuilder = new StringBuilder();
-            stringBuilder.Append(jsonStr, 0, closingBracketIndex);
-            foreach (var pluginName in pluginNames)
-            {
-                stringBuilder.Append(",\"").Append(pluginName).Append('"');
-            }
-            stringBuilder.Append(jsonStr, closingBracketIndex, jsonStr.Length - closingBracketIndex);
-
-            var newNativeJson = CommonUnityFunctions.MallocString(stringBuilder.ToString(), UseRightStructs.LabelMemStringId, out var length);
-            if (jsonPtr->data != 0)
-            {
-                CommonUnityFunctions.FreeAllocInternal(jsonPtr->data, jsonPtr->label);
-            }
-            jsonPtr->data = newNativeJson;
-            jsonPtr->size = length;
-            jsonPtr->capacity = length;
-        }
-
         public unsafe string ToStringAnsi()
         {
             if (_this->data == 0 || _this->size == 0)

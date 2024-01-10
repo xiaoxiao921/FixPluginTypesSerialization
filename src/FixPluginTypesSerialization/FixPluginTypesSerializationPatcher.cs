@@ -83,7 +83,6 @@ namespace FixPluginTypesSerialization
             var awakeFromLoadPatcher = new AwakeFromLoad();
             var isAssemblyCreatedPatcher = new IsAssemblyCreated();
             var isFileCreatedPatcher = new IsFileCreated();
-            var readStringFromFilePatcher = new ReadStringFromFile();
             var scriptingManagerDeconstructorPatcher = new ScriptingManagerDeconstructor();
             var pathToAbsolutePathPatcher = new PathToAbsolutePath();
             
@@ -93,12 +92,8 @@ namespace FixPluginTypesSerialization
             {
                 isFileCreatedPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.IsFileCreatedOffset);
             }
-            readStringFromFilePatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.ReadStringFromFileOffset);
             pathToAbsolutePathPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.PathToAbsolutePathOffset);
-            if (!ReadStringFromFile.IsApplied)
-            {
-                scriptingManagerDeconstructorPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.ScriptingManagerDeconstructorOffset);
-            }
+            scriptingManagerDeconstructorPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.ScriptingManagerDeconstructorOffset);
         }
     }
 }

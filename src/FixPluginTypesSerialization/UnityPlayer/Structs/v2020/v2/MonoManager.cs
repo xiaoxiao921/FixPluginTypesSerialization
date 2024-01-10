@@ -4,39 +4,31 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2019.v1
+namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2020.v2
 {
-    [StructLayout(LayoutKind.Explicit)]
-    public struct MonoManagerStruct
-    {
-        [FieldOffset(0x1b0)] public DynamicArrayData m_AssemblyNames;
-    }
-
-    [ApplicableToUnityVersionsSince("2019.1.0")]
+    [ApplicableToUnityVersionsSince("2020.2.0")]
     public class MonoManager : IMonoManager
     {
         public MonoManager()
         {
-
         }
 
         public MonoManager(IntPtr pointer)
         {
-            Pointer = pointer;
         }
 
-        public IntPtr Pointer { get; set; }
+        public IntPtr Pointer { get => CommonUnityFunctions.ScriptingAssemblies; set { } }
 
-        private unsafe MonoManagerStruct* _this => (MonoManagerStruct*)Pointer;
+        private unsafe RuntimeStatic<ScriptingAssemblies>* _this => (RuntimeStatic<ScriptingAssemblies>*)Pointer;
 
-        private DynamicArrayData _originalAssemblyNames;
+        private ScriptingAssemblies _originalScriptingAssemblies;
 
         public List<StringStorageDefaultV1> ManagedAssemblyList = new();
         public int AssemblyCount => ManagedAssemblyList.Count;
 
         public unsafe void CopyNativeAssemblyListToManaged()
         {
-            MonoManagerCommon.CopyNativeAssemblyListToManagedV2(ManagedAssemblyList, _this->m_AssemblyNames);
+            MonoManagerCommon.CopyNativeAssemblyListToManagedV2(ManagedAssemblyList, _this->value->names);
         }
 
         public void AddAssembliesToManagedList(List<string> pluginAssemblyPaths)
@@ -46,18 +38,17 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2019.v1
 
         public unsafe void AllocNativeAssemblyListFromManaged()
         {
-            _originalAssemblyNames = _this->m_AssemblyNames;
-            MonoManagerCommon.AllocNativeAssemblyListFromManagedV2(ManagedAssemblyList, &_this->m_AssemblyNames);
+            MonoManagerCommon.AllocNativeAssemblyListFromManagedV2(ManagedAssemblyList, &_this->value->names);
         }
 
         public unsafe void PrintAssemblies()
         {
-            MonoManagerCommon.PrintAssembliesV2(_this->m_AssemblyNames);
+            MonoManagerCommon.PrintAssembliesV2(_this->value->names);
         }
 
         public unsafe void RestoreOriginalAssemblyNamesArrayPtr()
         {
-            _this->m_AssemblyNames = _originalAssemblyNames;
+            *_this->value = _originalScriptingAssemblies;
         }
     }
 }

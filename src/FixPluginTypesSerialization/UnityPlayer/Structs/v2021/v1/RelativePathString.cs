@@ -68,52 +68,6 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2021.v1
             return true;
         }
 
-        public unsafe void AppendToScriptingAssemblies(IntPtr json, IEnumerable<string> pluginNames)
-        {
-            var path = ToStringAnsi();
-            if (!path.EndsWith("ScriptingAssemblies.json", StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
-            var jsonPtr = (StringStorageDefaultV2*)json;
-
-            var jsonStr = jsonPtr->data_repr switch
-            {
-                StringRepresentation.Embedded => Marshal.PtrToStringAnsi((nint)jsonPtr),
-                _ => Marshal.PtrToStringAnsi(jsonPtr->union.heap.data, (int)jsonPtr->union.heap.size)
-            };
-
-            var closingBracketIndex = jsonStr.IndexOf(']');
-            IsAssemblyCreated.VanillaAssemblyCount = jsonStr.Take(closingBracketIndex).Count(c => c == ',') + 1;
-
-            var stringBuilder = new StringBuilder();
-            stringBuilder.Append(jsonStr, 0, closingBracketIndex);
-            foreach (var pluginName in pluginNames)
-            {
-                stringBuilder.Append(",\"").Append(pluginName).Append('"');
-            }
-            stringBuilder.Append(jsonStr, closingBracketIndex, jsonStr.Length - closingBracketIndex);
-            
-            var newNativeJson = CommonUnityFunctions.MallocString(stringBuilder.ToString(), jsonPtr->label, out var length);
-
-            if (jsonPtr->data_repr != StringRepresentation.Embedded)
-            {
-                CommonUnityFunctions.FreeAllocInternal(jsonPtr->union.heap.data, jsonPtr->label);
-            }
-
-            jsonPtr->union = new StringStorageDefaultV2Union
-            {
-                heap = new HeapAllocatedRepresentation
-                {
-                    data = newNativeJson,
-                    size = length - 1,
-                    capacity = length - 1
-                }
-            };
-            jsonPtr->data_repr = StringRepresentation.Heap;
-        }
-
         public unsafe string ToStringAnsi()
         {
             if (_this->data == 0 || _this->size == 0)

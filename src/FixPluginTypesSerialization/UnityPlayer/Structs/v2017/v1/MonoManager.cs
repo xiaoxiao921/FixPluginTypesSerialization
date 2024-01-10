@@ -46,7 +46,8 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2017.v1
 
         public unsafe void AllocNativeAssemblyListFromManaged()
         {
-            MonoManagerCommon.AllocNativeAssemblyListFromManagedV1(ManagedAssemblyList, &_this->m_AssemblyNames, out _originalAssemblyNames);
+            _originalAssemblyNames = _this->m_AssemblyNames;
+            MonoManagerCommon.AllocNativeAssemblyListFromManagedV1(ManagedAssemblyList, &_this->m_AssemblyNames);
         }
 
         public unsafe void PrintAssemblies()

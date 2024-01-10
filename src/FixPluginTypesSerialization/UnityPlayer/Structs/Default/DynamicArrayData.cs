@@ -7,7 +7,7 @@ using System.Text;
 namespace FixPluginTypesSerialization.UnityPlayer.Structs.Default
 {
     // struct dynamic_array_detail::dynamic_array_data
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public struct DynamicArrayData
     {
         public nint ptr;

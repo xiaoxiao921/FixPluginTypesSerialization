@@ -49,7 +49,7 @@ namespace FixPluginTypesSerialization.Util
             }
         }
 
-        public static unsafe void AllocNativeAssemblyListFromManagedV1(List<StringStorageDefaultV1> managedAssemblyList, AssemblyList<StringStorageDefaultV1>* assemblyNames, out AssemblyList<StringStorageDefaultV1> originalAssemblyNames)
+        public static unsafe void AllocNativeAssemblyListFromManagedV1(List<StringStorageDefaultV1> managedAssemblyList, AssemblyList<StringStorageDefaultV1>* assemblyNames)
         {
             var nativeArray = (StringStorageDefaultV1*)Marshal.AllocHGlobal(Marshal.SizeOf(typeof(StringStorageDefaultV1)) * managedAssemblyList.Count);
 
@@ -62,8 +62,6 @@ namespace FixPluginTypesSerialization.Util
                 s->extra = managedAssemblyList[i].extra;
                 s->data = managedAssemblyList[i].data;
             }
-
-            originalAssemblyNames = assemblyNames[0];
 
             assemblyNames->first = nativeArray;
             assemblyNames->last = nativeArray + managedAssemblyList.Count;
@@ -111,7 +109,7 @@ namespace FixPluginTypesSerialization.Util
             }
         }
 
-        public static unsafe void AllocNativeAssemblyListFromManagedV2(List<StringStorageDefaultV1> managedAssemblyList, DynamicArrayData* assemblyNames, out DynamicArrayData originalAssemblyNames)
+        public static unsafe void AllocNativeAssemblyListFromManagedV2(List<StringStorageDefaultV1> managedAssemblyList, DynamicArrayData* assemblyNames)
         {
             var nativeArray = (StringStorageDefaultV1*)Marshal.AllocHGlobal(Marshal.SizeOf(typeof(StringStorageDefaultV1)) * managedAssemblyList.Count);
 
@@ -124,8 +122,6 @@ namespace FixPluginTypesSerialization.Util
                 s->extra = managedAssemblyList[i].extra;
                 s->data = managedAssemblyList[i].data;
             }
-
-            originalAssemblyNames = assemblyNames[0];
 
             assemblyNames->ptr = (nint)nativeArray;
             assemblyNames->size = (ulong)managedAssemblyList.Count;
@@ -151,6 +147,92 @@ namespace FixPluginTypesSerialization.Util
                 }
 
                 Log.Warning($"Ass: {Marshal.PtrToStringAnsi(data, (int)s->size)} | label : {s->label:X}");
+            }
+        }
+
+        public static unsafe void CopyNativeAssemblyListToManagedV3(List<StringStorageDefaultV2> managedAssemblyList, DynamicArrayData assemblyNames)
+        {
+            managedAssemblyList.Clear();
+
+            ulong i = 0;
+            for (StringStorageDefaultV2* s = (StringStorageDefaultV2*)assemblyNames.ptr;
+                i < assemblyNames.size;
+                s++, i++)
+            {
+                var newAssemblyString = new StringStorageDefaultV2
+                {
+                    union = s->union,
+                    data_repr = s->data_repr,
+                    label = s->label,
+                };
+
+                managedAssemblyList.Add(newAssemblyString);
+            }
+        }
+
+        public static void AddAssembliesToManagedListV3(List<StringStorageDefaultV2> managedAssemblyList, List<string> pluginAssemblyPaths)
+        {
+            foreach (var pluginAssemblyPath in pluginAssemblyPaths)
+            {
+                var pluginAssemblyName = Path.GetFileName(pluginAssemblyPath);
+                var length = (ulong)pluginAssemblyName.Length;
+
+                var assemblyString = new StringStorageDefaultV2
+                {
+                    union = new StringStorageDefaultV2Union
+                    {
+                        heap = new HeapAllocatedRepresentation
+                        {
+                            data = Marshal.StringToHGlobalAnsi(pluginAssemblyName),
+                            capacity = length,
+                            size = length,
+                        }
+                    },
+                    data_repr = StringRepresentation.Heap,
+                    label = UseRightStructs.LabelMemStringId,
+                };
+
+                managedAssemblyList.Add(assemblyString);
+            }
+        }
+
+        public static unsafe void AllocNativeAssemblyListFromManagedV3(List<StringStorageDefaultV2> managedAssemblyList, DynamicArrayData* assemblyNames)
+        {
+            var nativeArray = (StringStorageDefaultV2*)Marshal.AllocHGlobal(Marshal.SizeOf(typeof(StringStorageDefaultV2)) * managedAssemblyList.Count);
+
+            var i = 0;
+            for (StringStorageDefaultV2* s = nativeArray; i < managedAssemblyList.Count; s++, i++)
+            {
+                s->union = managedAssemblyList[i].union;
+                s->data_repr = managedAssemblyList[i].data_repr;
+                s->label = managedAssemblyList[i].label;
+            }
+
+            assemblyNames->ptr = (nint)nativeArray;
+            assemblyNames->size = (ulong)managedAssemblyList.Count;
+            assemblyNames->capacity = assemblyNames->size;
+        }
+
+        public static unsafe void PrintAssembliesV3(DynamicArrayData assemblyNames)
+        {
+            ulong i = 0;
+            for (StringStorageDefaultV2* s = (StringStorageDefaultV2*)assemblyNames.ptr;
+                i < assemblyNames.size;
+                s++, i++)
+            {
+                if (s->data_repr == StringRepresentation.Embedded)
+                {
+                    Log.Warning($"Ass: {Marshal.PtrToStringAnsi((IntPtr)s->union.embedded.data)} | label : {s->label:X}");
+                }
+                else
+                {
+                    if (s->union.heap.size == 0)
+                    {
+                        continue;
+                    }
+
+                    Log.Warning($"Ass: {Marshal.PtrToStringAnsi(s->union.heap.data, (int)s->union.heap.size)} | label : {s->label:X}");
+                }
             }
         }
     }

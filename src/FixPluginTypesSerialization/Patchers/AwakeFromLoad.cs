@@ -52,26 +52,22 @@ namespace FixPluginTypesSerialization.Patchers
 
         private static unsafe void OnAwakeFromLoad(IntPtr _monoManager, int awakeMode)
         {
-            if (!ReadStringFromFile.IsApplied)
-            {
-                CurrentMonoManager = UseRightStructs.GetStruct<IMonoManager>(_monoManager);
+            CurrentMonoManager = UseRightStructs.GetStruct<IMonoManager>(_monoManager);
 
-                CurrentMonoManager.CopyNativeAssemblyListToManaged();
+            CurrentMonoManager.CopyNativeAssemblyListToManaged();
 
-                IsAssemblyCreated.VanillaAssemblyCount = CurrentMonoManager.AssemblyCount;
+            IsAssemblyCreated.VanillaAssemblyCount = CurrentMonoManager.AssemblyCount;
 
-                CurrentMonoManager.AddAssembliesToManagedList(FixPluginTypesSerializationPatcher.PluginPaths);
+            CurrentMonoManager.AddAssembliesToManagedList(FixPluginTypesSerializationPatcher.PluginPaths);
 
-                CurrentMonoManager.AllocNativeAssemblyListFromManaged();
+            CurrentMonoManager.AllocNativeAssemblyListFromManaged();
 
-                //CurrentMonoManager.PrintAssemblies();
-            }
+            //CurrentMonoManager.PrintAssemblies();
 
             original(_monoManager, awakeMode);
 
             // Dispose detours as we don't need them anymore
             // and could hog resources for nothing otherwise
-            ReadStringFromFile.Dispose();
             IsFileCreated.Dispose();
             PathToAbsolutePath.Dispose();
             IsAssemblyCreated.Dispose();

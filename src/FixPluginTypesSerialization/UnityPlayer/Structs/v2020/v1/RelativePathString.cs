@@ -57,11 +57,6 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2020.v1
             return true;
         }
 
-        public unsafe void AppendToScriptingAssemblies(IntPtr json, IEnumerable<string> pluginNames)
-        {
-            throw new NotSupportedException("ScriptingAssemblies start from Unity 2020.2");
-        }
-
         public unsafe string ToStringAnsi()
         {
             return Marshal.PtrToStringAnsi(Pointer);

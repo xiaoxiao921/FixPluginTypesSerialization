@@ -24,6 +24,8 @@ namespace FixPluginTypesSerialization.Util
         private static FreeAllocInternalV1Func freeAllocInternalV1;
         private static FreeAllocInternalV2Func freeAllocInternalV2;
 
+        public static IntPtr ScriptingAssemblies { get; private set; }
+
         public static void Init(IntPtr unityModule, int moduleSize, MiniPdbReader pdbReader)
         {
             var mallocInternalAddress = PatternDiscover.Discover(
@@ -55,6 +57,18 @@ namespace FixPluginTypesSerialization.Util
                 {
                     freeAllocInternalV1 = (FreeAllocInternalV1Func)Marshal.GetDelegateForFunctionPointer(freeAllocInternalAddress, typeof(FreeAllocInternalV1Func));
                 }
+            }
+
+            var scriptingAssembliesAddress = PatternDiscover.Discover(
+                unityModule,
+                moduleSize,
+                pdbReader,
+                Config.ScriptingAssembliesOffset,
+                [Encoding.ASCII.GetBytes("m_ScriptingAssemblies@")],
+                []);
+            if (scriptingAssembliesAddress != IntPtr.Zero)
+            {
+                ScriptingAssemblies = scriptingAssembliesAddress;
             }
         }
 
