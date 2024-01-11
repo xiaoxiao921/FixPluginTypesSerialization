@@ -9,7 +9,7 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2017.v3
     [StructLayout(LayoutKind.Explicit)]
     public struct MonoManagerStruct
     {
-        [FieldOffset(0x198)] public AssemblyList<StringStorageDefaultV1> m_AssemblyNames;
+        [FieldOffset(0x198)] public Vector<StringStorageDefaultV1> m_AssemblyNames;
     }
 
     [ApplicableToUnityVersionsSince("2017.3.0")]
@@ -29,7 +29,7 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2017.v3
 
         private unsafe MonoManagerStruct* _this => (MonoManagerStruct*)Pointer;
 
-        private AssemblyList<StringStorageDefaultV1> _originalAssemblyNames;
+        private Vector<StringStorageDefaultV1> _originalAssemblyNames;
 
         public List<StringStorageDefaultV1> ManagedAssemblyList = new();
         public int AssemblyCount => ManagedAssemblyList.Count;

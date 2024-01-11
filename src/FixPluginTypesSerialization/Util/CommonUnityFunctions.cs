@@ -78,8 +78,9 @@ namespace FixPluginTypesSerialization.Util
             //that we would get from mallocInternal from c# so we're doing it this way
             var strPtr = Marshal.StringToHGlobalAnsi(str);
 
-            length = 0ul;
-            for (var c = (byte*)strPtr; *c != 0; c++, length++) { }
+            length = (ulong)str.Length;
+            //Ansi string might be longer than managed
+            for (var c = (byte*)strPtr + length; *c != 0; c++, length++) { }
 
             var allocPtr = mallocInternal(length + 1, 0x10, label, AllocateOptions.NullIfOutOfMemory, IntPtr.Zero, 0);
 

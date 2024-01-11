@@ -13,34 +13,23 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.Default
         public StringStorageDefaultV2Union union;
         public StringRepresentation data_repr;
         public int label;
-
-        public unsafe bool IsValid()
-        {
-            switch (data_repr)
-            {
-                case StringRepresentation.Heap:
-                    return union.heap.data > 0;
-                default:
-                    return true;
-            };
-        }
     }
 
     [StructLayout(LayoutKind.Explicit, Pack = 8)]
     public struct StringStorageDefaultV2Union
     {
         [FieldOffset(0)]
-        public StackAllocatedRepresentation embedded;
+        public StackAllocatedRepresentationV2 embedded;
         [FieldOffset(0)]
-        public HeapAllocatedRepresentation heap;
+        public HeapAllocatedRepresentationV2 heap;
     }
 
-    public struct StackAllocatedRepresentation
+    public struct StackAllocatedRepresentationV2
     {
         public unsafe fixed byte data[25];
     }
 
-    public struct HeapAllocatedRepresentation
+    public struct HeapAllocatedRepresentationV2
     {
         public nint data;
         public ulong capacity;

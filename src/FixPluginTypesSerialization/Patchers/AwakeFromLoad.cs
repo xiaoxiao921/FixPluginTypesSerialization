@@ -69,7 +69,7 @@ namespace FixPluginTypesSerialization.Patchers
             // Dispose detours as we don't need them anymore
             // and could hog resources for nothing otherwise
             IsFileCreated.Dispose();
-            PathToAbsolutePath.Dispose();
+            ConvertSeparatorsToPlatform.Dispose();
             IsAssemblyCreated.Dispose();
         }
     }

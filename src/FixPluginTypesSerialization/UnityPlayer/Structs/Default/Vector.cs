@@ -3,7 +3,7 @@
 namespace FixPluginTypesSerialization.UnityPlayer.Structs.Default
 {
     [StructLayout(LayoutKind.Sequential)]
-    public unsafe struct AssemblyList<T> where T : struct
+    public unsafe struct Vector<T> where T : struct
     {
 #pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
         public T* first;

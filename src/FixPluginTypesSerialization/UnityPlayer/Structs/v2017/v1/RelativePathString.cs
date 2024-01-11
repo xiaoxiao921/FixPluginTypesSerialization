@@ -27,20 +27,11 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2017.v1
 
         private unsafe StringStorageDefaultV1* _this => (StringStorageDefaultV1*)Pointer;
 
-        public unsafe bool CreatePluginAbsolutePath(out StringStorageDefaultV1 output)
-        {
-            var fixedOutput = new StringStorageDefaultV1();
-
-            var result = CreatePluginAbsolutePath((IntPtr)(&fixedOutput));
-            output = fixedOutput;
-            return result;
-        }
-
-        public unsafe bool CreatePluginAbsolutePath(IntPtr output)
+        public unsafe void FixAbsolutePath()
         {
             if (_this->size == 0)
             {
-                return false;
+                return;
             }
 
             var data = _this->data;
@@ -52,22 +43,26 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2017.v1
             var pathNameStr = Marshal.PtrToStringAnsi(data, (int)_this->size);
 
             var fileNameStr = Path.GetFileName(pathNameStr);
-            var newPath = FixPluginTypesSerializationPatcher.PluginPaths.FirstOrDefault(p => Path.GetFileName(p) == fileNameStr);
-            if (string.IsNullOrEmpty(newPath))
+            var newPathIndex = FixPluginTypesSerializationPatcher.PluginNames.IndexOf(fileNameStr);
+            if (newPathIndex == -1)
             {
-                return false;
+                return;
             }
 
+            var newPath = FixPluginTypesSerializationPatcher.PluginPaths[newPathIndex];
             var newNativePath = CommonUnityFunctions.MallocString(newPath, UseRightStructs.LabelMemStringId, out var length);
 
-            var str = (StringStorageDefaultV1*)output;
-            str->data = newNativePath;
-            str->capacity = length - 1;
-            str->extra = 0;
-            str->size = length - 1;
-            str->label = UseRightStructs.LabelMemStringId;
+            if (_this->data != 0)
+            {
+                CommonUnityFunctions.FreeAllocInternal(_this->data, _this->label);
+            }
 
-            return true;
+            var str = _this;
+            str->data = newNativePath;
+            str->capacity = length;
+            str->extra = 0;
+            str->size = length;
+            str->label = UseRightStructs.LabelMemStringId;
         }
         
         public unsafe string ToStringAnsi()

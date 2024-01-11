@@ -52,11 +52,11 @@ namespace FixPluginTypesSerialization
                 $"The in-memory offset of the " +
                 $"{nameof(ScriptingManagerDeconstructor)} function.");
 
-        internal static ConfigEntry<string> PathToAbsolutePathOffset =
-            _config.Bind("Cache", nameof(PathToAbsolutePath),
+        internal static ConfigEntry<string> ConvertSeparatorsToPlatformOffset =
+            _config.Bind("Cache", nameof(ConvertSeparatorsToPlatformOffset),
                 "00",
                 $"The in-memory offset of the " +
-                $"{nameof(PathToAbsolutePath)} function.");
+                $"{nameof(ConvertSeparatorsToPlatform)} function.");
 
         internal static ConfigEntry<string> FreeAllocInternalOffset =
             _config.Bind("Cache", nameof(FreeAllocInternalOffset),
