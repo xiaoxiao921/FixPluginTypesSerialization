@@ -8,9 +8,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2017.v1
+namespace FixPluginTypesSerialization.UnityPlayer.Structs.v5.v0
 {
-    [ApplicableToUnityVersionsSince("2017.1.0")]
+    [ApplicableToUnityVersionsSince("3.4.0")]
     public class RelativePathString : IRelativePathString
     {
         public RelativePathString()
@@ -25,22 +25,13 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2017.v1
 
         public IntPtr Pointer { get; set; }
 
-        private unsafe StringStorageDefaultV1* _this => (StringStorageDefaultV1*)Pointer;
+        private unsafe StringStorageDefaultV0* _this => (StringStorageDefaultV0*)Pointer;
 
         public unsafe void FixAbsolutePath()
         {
-            if (_this->size == 0)
-            {
-                return;
-            }
-
-            var data = _this->data;
-            if (data == 0)
-            {
-                data = (IntPtr)(Pointer.ToInt64() + 8);
-            }
-
-            var pathNameStr = Marshal.PtrToStringAnsi(data, (int)_this->size);
+            var pathNameStr = _this->flags < 16
+                ? Marshal.PtrToStringAnsi(Pointer)
+                : Marshal.PtrToStringAnsi(_this->data, (int)_this->size);
 
             var fileNameStr = Path.GetFileName(pathNameStr);
             var newPathIndex = FixPluginTypesSerializationPatcher.PluginNames.IndexOf(fileNameStr);
@@ -54,31 +45,25 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2017.v1
 
             if (_this->data != 0)
             {
-                CommonUnityFunctions.FreeAllocInternal(_this->data, _this->label);
+                CommonUnityFunctions.FreeAllocInternal(_this->data, UseRightStructs.LabelMemStringId);
             }
 
             var str = _this;
             str->data = newNativePath;
-            str->capacity = length;
-            str->extra = 0;
+            str->extra1 = (ulong)length;
             str->size = length;
-            str->label = UseRightStructs.LabelMemStringId;
+            str->flags = 31;
+            str->extra2 = 0;
         }
         
         public unsafe string ToStringAnsi()
         {
-            if (_this->size == 0)
+            if (_this->flags < 16)
             {
-                return null;
+                return Marshal.PtrToStringAnsi(Pointer);
             }
 
-            var data = _this->data;
-            if (data == 0)
-            {
-                data = (nint)_this + 8;
-            }
-
-            return Marshal.PtrToStringAnsi(data, (int)_this->size);
+            return Marshal.PtrToStringAnsi(_this->data, (int)_this->size);
         }
     }
 }

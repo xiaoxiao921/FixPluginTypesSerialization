@@ -97,14 +97,10 @@ namespace FixPluginTypesSerialization.Util
 
         private bool DownloadUnityPdb(PeReader peReader)
         {
-            const string unitySymbolServer = "http://symbolserver.unity3d.com/";
+            const string unitySymbolServer = "http://symbolserver.unity3d.com";
 
             var pdbCompressedPath = peReader.RsdsPdbFileName.TrimEnd('b') + '_';
-#if NET35
-            var pdbDownloadUrl = Path.Combine(Path.Combine(unitySymbolServer, peReader.RsdsPdbFileName), Path.Combine(peReader.PdbGuid, pdbCompressedPath));
-#else
-            var pdbDownloadUrl = Path.Combine(unitySymbolServer, peReader.RsdsPdbFileName, peReader.PdbGuid, pdbCompressedPath);
-#endif
+            var pdbDownloadUrl = $"{unitySymbolServer}/{peReader.RsdsPdbFileName}/{peReader.PdbGuid}/{pdbCompressedPath}";
 
             var compressedPdbCab = DownloadFromWeb(pdbDownloadUrl);
 
@@ -152,7 +148,6 @@ namespace FixPluginTypesSerialization.Util
                 .FirstOrDefault(m => m.res > 0);
                 if (match == null)
                 {
-                    Log.Error("No function offset found, cannot hook ! Please report it to the r2api devs !");
                     return IntPtr.Zero;
                 }
 

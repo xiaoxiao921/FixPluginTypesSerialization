@@ -11,6 +11,69 @@ namespace FixPluginTypesSerialization.Util
 {
     internal static class MonoManagerCommon
     {
+        public static unsafe void CopyNativeAssemblyListToManagedV0(List<StringStorageDefaultV0> managedAssemblyList, Vector<StringStorageDefaultV0> assemblyNames)
+        {
+            managedAssemblyList.Clear();
+
+            for (StringStorageDefaultV0* s = assemblyNames.first; s != assemblyNames.last; s++)
+            {
+                managedAssemblyList.Add(*s);
+            }
+        }
+
+        public static unsafe void AddAssembliesToManagedListV0(List<StringStorageDefaultV0> managedAssemblyList, List<string> pluginAssemblyPaths)
+        {
+            foreach (var pluginAssemblyPath in pluginAssemblyPaths)
+            {
+                var pluginAssemblyName = Path.GetFileName(pluginAssemblyPath);
+                var length = (ulong)pluginAssemblyName.Length;
+                var strPtr = Marshal.StringToHGlobalAnsi(pluginAssemblyName);
+                //Ansi string might be longer than managed
+                for (var c = (byte*)strPtr + length; *c != 0; c++, length++) { }
+
+                var assemblyString = new StringStorageDefaultV0
+                {
+                    data = strPtr,
+                    extra1 = (ulong)length,
+                    size = length,
+                    flags = 31,
+                    extra2 = 0
+                };
+
+                managedAssemblyList.Add(assemblyString);
+            }
+        }
+
+        public static unsafe void AllocNativeAssemblyListFromManagedV0(List<StringStorageDefaultV0> managedAssemblyList, Vector<StringStorageDefaultV0>* assemblyNames)
+        {
+            var nativeArray = (StringStorageDefaultV0*)Marshal.AllocHGlobal(Marshal.SizeOf(typeof(StringStorageDefaultV0)) * managedAssemblyList.Count);
+
+            var i = 0;
+            for (StringStorageDefaultV0* s = nativeArray; i < managedAssemblyList.Count; s++, i++)
+            {
+                *s = managedAssemblyList[i];
+            }
+
+            assemblyNames->first = nativeArray;
+            assemblyNames->last = nativeArray + managedAssemblyList.Count;
+            assemblyNames->end = assemblyNames->last;
+        }
+
+        public static unsafe void PrintAssembliesV0(Vector<StringStorageDefaultV0> assemblyNames)
+        {
+            for (StringStorageDefaultV0* s = assemblyNames.first; s != assemblyNames.last; s++)
+            {
+                if (s->flags < 16)
+                {
+                    Log.Warning($"Ass: {Marshal.PtrToStringAnsi((IntPtr)s)}");
+                    continue;
+                }
+
+                Log.Warning($"Ass: {Marshal.PtrToStringAnsi(s->data, (int)s->size)}");
+            }
+        }
+
+
         public static unsafe void CopyNativeAssemblyListToManagedV1(List<StringStorageDefaultV1> managedAssemblyList, Vector<StringStorageDefaultV1> assemblyNames)
         {
             managedAssemblyList.Clear();

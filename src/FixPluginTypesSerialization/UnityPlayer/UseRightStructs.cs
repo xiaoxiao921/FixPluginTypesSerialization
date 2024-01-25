@@ -225,9 +225,13 @@ namespace FixPluginTypesSerialization.UnityPlayer
             {
                 LabelMemStringId = 0x44;
             }
-            else
+            else if (UnityVersion >= new Version(2017, 1))
             {
                 LabelMemStringId = 0x42;
+            }
+            else //5.0.0
+            {
+                LabelMemStringId = 0x3a;
             }
         }
     }
