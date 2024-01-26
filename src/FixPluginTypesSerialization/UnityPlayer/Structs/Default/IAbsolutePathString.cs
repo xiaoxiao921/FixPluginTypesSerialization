@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace FixPluginTypesSerialization.UnityPlayer.Structs.Default
 {
-    public interface IRelativePathString : INativeStruct
+    public interface IAbsolutePathString : INativeStruct
     {
         public unsafe void FixAbsolutePath();
 

@@ -31,7 +31,6 @@ namespace FixPluginTypesSerialization.Util
 #if NETSTANDARD2_0_OR_GREATER
             try
             {
-
                 var httpResponse = _httpClient.GetAsync(url).GetAwaiter().GetResult();
 
                 Log.Info("Status Code : " + httpResponse.StatusCode);
@@ -67,7 +66,7 @@ namespace FixPluginTypesSerialization.Util
 
             if (_peReader.RsdsPdbFileName == null)
             {
-                Log.Info("No pdb path found in the pe file. Falling back to sig matching");
+                Log.Info("No pdb path found in the pe file. Falling back to supported versions");
             }
             else
             {
@@ -85,7 +84,7 @@ namespace FixPluginTypesSerialization.Util
                     }
                     else
                     {
-                        Log.Info("Failed to find the linked pdb in the unity symbol server. Falling back to sig matching");
+                        Log.Info("Failed to find the linked pdb in the unity symbol server. Falling back to supported versions");
                     }
                 }
                 else

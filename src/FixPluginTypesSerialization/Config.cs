@@ -2,6 +2,7 @@
 using BepInEx.Configuration;
 using FixPluginTypesSerialization.Patchers;
 using FixPluginTypesSerialization.UnityPlayer.Structs.v2017.v1;
+using FixPluginTypesSerialization.Util;
 using System;
 using System.IO;
 
@@ -14,11 +15,21 @@ namespace FixPluginTypesSerialization
                 true);
 
         internal static ConfigEntry<string> UnityVersionOverride =
-            _config.Bind("Cache", nameof(UnityVersionOverride),
+            _config.Bind("Overrides", nameof(UnityVersionOverride),
                 "",
-                "Unity version is Major.Minor.Patch format i.e. 2017.2.1. " +
-                "If specified, this version will be used instead of auto-detection " +
+                "Unity version is Major.Minor.Patch format i.e. 2017.2.1." + Environment.NewLine +
+                "If specified, this version will be used instead of auto-detection" + Environment.NewLine +
                 "from executable info. Specify only if the patcher doesn't work otherwise.");
+
+        internal static ConfigEntry<FunctionOffsetLookup> FunctionOffsetLookupType =
+            _config.Bind("Overrides", nameof(FunctionOffsetLookupType),
+                FunctionOffsetLookup.PreferSupportedVersions,
+                $"{nameof(FunctionOffsetLookup.PreferSupportedVersions)} - using values for supported versions, " +
+                "if a version is not supported trying to use pdb." + Environment.NewLine +
+                $"{nameof(FunctionOffsetLookup.PreferPdb)} - using pdb, it will be downloaded from  Unity symbols server," +
+                "if there is no pdb or download failed trying to use values for supported versions." + Environment.NewLine +
+                $"{nameof(FunctionOffsetLookup.Manual)} - using offsets from [Cache] section of the config, " +
+                $"which you need to specify yourself as hex values.");
 
         internal static ConfigEntry<string> LastDownloadedGUID =
             _config.Bind("Cache", nameof(LastDownloadedGUID),

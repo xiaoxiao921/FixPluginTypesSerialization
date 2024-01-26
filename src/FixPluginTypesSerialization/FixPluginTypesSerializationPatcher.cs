@@ -67,8 +67,6 @@ namespace FixPluginTypesSerialization
                 unityDllPath = BepInEx.Paths.ExecutablePath;
             }
 
-            var pdbReader = new MiniPdbReader(unityDllPath);
-
             static bool IsUnityPlayer(ProcessModule p)
             {
                 return p.ModuleName.ToLowerInvariant().Contains("unityplayer");
@@ -78,7 +76,8 @@ namespace FixPluginTypesSerialization
                 .Cast<ProcessModule>()
                 .FirstOrDefault(IsUnityPlayer) ?? Process.GetCurrentProcess().MainModule;
 
-            CommonUnityFunctions.Init(proc.BaseAddress, proc.ModuleMemorySize, pdbReader);
+            var patternDiscoverer = new PatternDiscoverer(proc.BaseAddress, unityDllPath);
+            CommonUnityFunctions.Init(patternDiscoverer);
 
             var awakeFromLoadPatcher = new AwakeFromLoad();
             var isAssemblyCreatedPatcher = new IsAssemblyCreated();
@@ -86,14 +85,14 @@ namespace FixPluginTypesSerialization
             var scriptingManagerDeconstructorPatcher = new ScriptingManagerDeconstructor();
             var convertSeparatorsToPlatformPatcher = new ConvertSeparatorsToPlatform();
             
-            awakeFromLoadPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.MonoManagerAwakeFromLoadOffset);
-            isAssemblyCreatedPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.MonoManagerIsAssemblyCreatedOffset);
+            awakeFromLoadPatcher.Patch(patternDiscoverer, Config.MonoManagerAwakeFromLoadOffset);
+            isAssemblyCreatedPatcher.Patch(patternDiscoverer, Config.MonoManagerIsAssemblyCreatedOffset);
             if (!IsAssemblyCreated.IsApplied)
             {
-                isFileCreatedPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.IsFileCreatedOffset);
+                isFileCreatedPatcher.Patch(patternDiscoverer, Config.IsFileCreatedOffset);
             }
-            convertSeparatorsToPlatformPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.ConvertSeparatorsToPlatformOffset);
-            scriptingManagerDeconstructorPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.ScriptingManagerDeconstructorOffset);
+            convertSeparatorsToPlatformPatcher.Patch(patternDiscoverer, Config.ConvertSeparatorsToPlatformOffset);
+            scriptingManagerDeconstructorPatcher.Patch(patternDiscoverer, Config.ScriptingManagerDeconstructorOffset);
         }
     }
 }

@@ -22,13 +22,7 @@ namespace FixPluginTypesSerialization.Patchers
 
         protected override BytePattern[] PdbPatterns { get; } =
         {
-            Encoding.ASCII.GetBytes("MonoManager::" + nameof(AwakeFromLoad)),
             Encoding.ASCII.GetBytes(nameof(AwakeFromLoad) + "@MonoManager")
-        };
-
-        protected override BytePattern[] SigPatterns { get; } =
-        {
-            "40 53 48 81 EC ? ? ? ? 33 C0 C7 44 24 ? ? ? ? ? 0F 57 C0" // 2018.4.16 and 2019.4.16
         };
 
         protected override unsafe void Apply(IntPtr from)

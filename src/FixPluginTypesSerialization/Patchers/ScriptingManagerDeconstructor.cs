@@ -18,13 +18,7 @@ namespace FixPluginTypesSerialization.Patchers
 
         protected override BytePattern[] PdbPatterns { get; } =
         {
-            Encoding.ASCII.GetBytes("ScriptingManager::~ScriptingManager"),
             Encoding.ASCII.GetBytes("?1ScriptingManager@"),
-        };
-
-        protected override BytePattern[] SigPatterns { get; } =
-        {
-            "48 89 5C 24 ? 57 48 83 EC 20 48 8D 05 ? ? ? ? 48 8B D9 48 89 01 48 81 C1 ? ? ? ? E8 ? ? ? ? 48 8D 8B ? ? ? ? E8 ? ? ? ? 48 8D 8B" // 2019.4.16
         };
 
         protected override unsafe void Apply(IntPtr from)

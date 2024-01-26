@@ -25,10 +25,6 @@ namespace FixPluginTypesSerialization.Patchers
             Encoding.ASCII.GetBytes(nameof(IsFileCreated)),
         };
 
-        protected override BytePattern[] SigPatterns { get; } =
-        {
-        };
-
         protected override unsafe void Apply(IntPtr from)
         {
             var hookPtr =
@@ -50,7 +46,7 @@ namespace FixPluginTypesSerialization.Patchers
 
         private static unsafe bool OnIsFileCreated(IntPtr str)
         {
-            var assemblyString = UseRightStructs.GetStruct<IRelativePathString>(str);
+            var assemblyString = UseRightStructs.GetStruct<IAbsolutePathString>(str);
             var actualString = assemblyString.ToStringAnsi();
 
             if (actualString is not null && FixPluginTypesSerializationPatcher.PluginNames.Any(actualString.EndsWith))

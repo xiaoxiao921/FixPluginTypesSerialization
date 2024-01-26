@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using FixPluginTypesSerialization.UnityPlayer;
-using UnityEngine;
 
 namespace FixPluginTypesSerialization.Util
 {
@@ -26,27 +23,19 @@ namespace FixPluginTypesSerialization.Util
 
         public static IntPtr ScriptingAssemblies { get; private set; }
 
-        public static void Init(IntPtr unityModule, int moduleSize, MiniPdbReader pdbReader)
+        public static void Init(PatternDiscoverer patternDiscoverer)
         {
-            var mallocInternalAddress = PatternDiscover.Discover(
-                unityModule,
-                moduleSize,
-                pdbReader,
+            var mallocInternalAddress = patternDiscoverer.Discover(
                 Config.MallocInternalOffset,
-                [Encoding.ASCII.GetBytes("malloc_internal")],
-                []);
+                [Encoding.ASCII.GetBytes("malloc_internal")]);
             if (mallocInternalAddress != IntPtr.Zero)
             {
                 mallocInternal = (MallocInternalFunc)Marshal.GetDelegateForFunctionPointer(mallocInternalAddress, typeof(MallocInternalFunc));
             }
 
-            var freeAllocInternalAddress = PatternDiscover.Discover(
-                unityModule,
-                moduleSize,
-                pdbReader,
+            var freeAllocInternalAddress = patternDiscoverer.Discover(
                 Config.FreeAllocInternalOffset,
-                [Encoding.ASCII.GetBytes("free_alloc_internal")],
-                []);
+                [Encoding.ASCII.GetBytes("free_alloc_internal")]);
             if (freeAllocInternalAddress != IntPtr.Zero)
             {
                 if (UseRightStructs.UnityVersion >= new Version(2019, 3))
@@ -59,13 +48,9 @@ namespace FixPluginTypesSerialization.Util
                 }
             }
 
-            var scriptingAssembliesAddress = PatternDiscover.Discover(
-                unityModule,
-                moduleSize,
-                pdbReader,
+            var scriptingAssembliesAddress = patternDiscoverer.Discover(
                 Config.ScriptingAssembliesOffset,
-                [Encoding.ASCII.GetBytes("m_ScriptingAssemblies@")],
-                []);
+                [Encoding.ASCII.GetBytes("m_ScriptingAssemblies@")]);
             if (scriptingAssembliesAddress != IntPtr.Zero)
             {
                 ScriptingAssemblies = scriptingAssembliesAddress;

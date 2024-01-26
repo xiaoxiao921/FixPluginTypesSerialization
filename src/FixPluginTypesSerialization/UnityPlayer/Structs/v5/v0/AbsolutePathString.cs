@@ -11,14 +11,14 @@ using System.Text;
 namespace FixPluginTypesSerialization.UnityPlayer.Structs.v5.v0
 {
     [ApplicableToUnityVersionsSince("3.4.0")]
-    public class RelativePathString : IRelativePathString
+    public class AbsolutePathString : IAbsolutePathString
     {
-        public RelativePathString()
+        public AbsolutePathString()
         {
 
         }
 
-        public RelativePathString(IntPtr pointer)
+        public AbsolutePathString(IntPtr pointer)
         {
             Pointer = pointer;
         }

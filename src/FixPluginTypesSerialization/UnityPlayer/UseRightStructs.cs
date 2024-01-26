@@ -58,7 +58,17 @@ namespace FixPluginTypesSerialization.UnityPlayer
                 Log.Error($"Unity version {Config.UnityVersionOverride.Value} has incorrect format.");
             }
 
-            if (TryInitializeUnityVersion(Process.GetCurrentProcess().MainModule.FileVersionInfo.FileVersion))
+            static bool IsUnityPlayer(ProcessModule p)
+            {
+                return p.ModuleName.ToLowerInvariant().Contains("unityplayer");
+            }
+
+            //exe doesn't always have correct version, trying to use UnityPlayer when available
+            var module = Process.GetCurrentProcess().Modules
+                .Cast<ProcessModule>()
+                .FirstOrDefault(IsUnityPlayer) ?? Process.GetCurrentProcess().MainModule;
+
+            if (TryInitializeUnityVersion(module.FileVersionInfo.FileVersion))
                 Log.Debug($"Unity version obtained from main application module.");
             else
                 Log.Error($"Running under default Unity version. UnityVersionHandler is not initialized.");

@@ -24,10 +24,6 @@ namespace FixPluginTypesSerialization.Patchers
             Encoding.ASCII.GetBytes(nameof(ConvertSeparatorsToPlatform))
         };
 
-        protected override BytePattern[] SigPatterns { get; } =
-        {
-        };
-
         protected override unsafe void Apply(IntPtr from)
         {
             var hookPtr = Marshal.GetFunctionPointerForDelegate(new ConvertSeparatorsToPlatformDelegate(OnConvertSeparatorsToPlatformV1));
@@ -50,7 +46,7 @@ namespace FixPluginTypesSerialization.Patchers
 
         private static unsafe void OnConvertSeparatorsToPlatformV1(IntPtr assemblyStringPathName)
         {
-            var assemblyString = UseRightStructs.GetStruct<IRelativePathString>(assemblyStringPathName);
+            var assemblyString = UseRightStructs.GetStruct<IAbsolutePathString>(assemblyStringPathName);
 
             assemblyString.FixAbsolutePath();
 
