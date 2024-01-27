@@ -18,15 +18,11 @@ namespace FixPluginTypesSerialization.Patchers
         private static NativeDetour _detour;
 
         internal static IMonoManager CurrentMonoManager;
+        internal static bool IsApplied { get; private set; }
 
         protected override BytePattern[] PdbPatterns { get; } =
         {
-            Encoding.ASCII.GetBytes("MonoManager::" + nameof(AwakeFromLoad))
-        };
-
-        protected override BytePattern[] SigPatterns { get; } =
-        {
-            "40 53 48 81 EC ? ? ? ? 33 C0 C7 44 24 ? ? ? ? ? 0F 57 C0" // 2018.4.16 and 2019.4.16
+            Encoding.ASCII.GetBytes(nameof(AwakeFromLoad) + "@MonoManager")
         };
 
         protected override unsafe void Apply(IntPtr from)
@@ -38,11 +34,14 @@ namespace FixPluginTypesSerialization.Patchers
 
             original = _detour.GenerateTrampoline<AwakeFromLoadDelegate>();
             _detour.Apply();
+
+            IsApplied = true;
         }
 
         internal static void Dispose()
         {
-            _detour.Dispose();
+            _detour?.Dispose();
+            IsApplied = false;
         }
 
         private static unsafe void OnAwakeFromLoad(IntPtr _monoManager, int awakeMode)
@@ -61,9 +60,11 @@ namespace FixPluginTypesSerialization.Patchers
 
             original(_monoManager, awakeMode);
 
-            // Dispose the ReadStringFromFile detour as we don't need it anymore
+            // Dispose detours as we don't need them anymore
             // and could hog resources for nothing otherwise
-            ReadStringFromFile.Dispose();
+            IsFileCreated.Dispose();
+            ConvertSeparatorsToPlatform.Dispose();
+            IsAssemblyCreated.Dispose();
         }
     }
 }

@@ -15,15 +15,11 @@ namespace FixPluginTypesSerialization.Patchers
 
         private static NativeDetour _detour;
 
+        internal static bool IsApplied { get; private set; }
+
         protected override BytePattern[] PdbPatterns { get; } =
         {
-            Encoding.ASCII.GetBytes("MonoManager::" + nameof(IsAssemblyCreated))
-        };
-
-        protected override BytePattern[] SigPatterns { get; } =
-        {
-            "E8 ? ? ? ? 84 C0 74 43 45 84 FF", // 2018.4.16
-            "E8 ? ? ? ? 84 C0 74 41 45 84 FF" // 2019.4.16
+            Encoding.ASCII.GetBytes(nameof(IsAssemblyCreated) + "@MonoManager"),
         };
 
         internal static int VanillaAssemblyCount;
@@ -36,12 +32,15 @@ namespace FixPluginTypesSerialization.Patchers
             _detour = new NativeDetour(from, hookPtr, new NativeDetourConfig {ManualApply = true});
 
             original = _detour.GenerateTrampoline<IsAssemblyCreatedDelegate>();
-            _detour.Apply();
+            _detour?.Apply();
+
+            IsApplied = true;
         }
 
         internal static void Dispose()
         {
-            _detour.Dispose();
+            _detour?.Dispose();
+            IsApplied = false;
         }
 
         private static unsafe bool OnIsAssemblyCreated(IntPtr _monoManager, int index)

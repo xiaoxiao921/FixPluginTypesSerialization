@@ -58,6 +58,7 @@ namespace FixPluginTypesSerialization.Util
         {
             var ptr = (byte*) start.ToPointer();
             for (long j = 0, k = 0; j < maxSize;)
+            {
                 if (pattern[k] == null || ptr[j] == pattern[k])
                 {
                     j++;
@@ -72,6 +73,7 @@ namespace FixPluginTypesSerialization.Util
                     j++;
                     k++;
                 }
+            }
 
             return 0;
         }

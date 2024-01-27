@@ -14,19 +14,17 @@ namespace FixPluginTypesSerialization.Patchers
         private static NativeDetour _detour;
         private static ScriptingManagerDeconstructorDelegate orig;
 
+        internal static bool IsApplied { get; private set; }
+
         protected override BytePattern[] PdbPatterns { get; } =
         {
-            Encoding.ASCII.GetBytes("ScriptingManager::~ScriptingManager")
-        };
-
-        protected override BytePattern[] SigPatterns { get; } =
-        {
-            "48 89 5C 24 ? 57 48 83 EC 20 48 8D 05 ? ? ? ? 48 8B D9 48 89 01 48 81 C1 ? ? ? ? E8 ? ? ? ? 48 8D 8B ? ? ? ? E8 ? ? ? ? 48 8D 8B" // 2019.4.16
+            Encoding.ASCII.GetBytes("?1ScriptingManager@"),
         };
 
         protected override unsafe void Apply(IntPtr from)
         {
             ApplyDetour(from);
+            IsApplied = true;
         }
 
         private void ApplyDetour(IntPtr from)
@@ -41,6 +39,7 @@ namespace FixPluginTypesSerialization.Patchers
         internal static void Dispose()
         {
             DisposeDetours();
+            IsApplied = false;
         }
 
         private static void DisposeDetours()

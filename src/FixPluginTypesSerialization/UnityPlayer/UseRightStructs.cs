@@ -1,4 +1,5 @@
 ﻿using FixPluginTypesSerialization.UnityPlayer.Structs.Default;
+using FixPluginTypesSerialization.Util;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -26,7 +27,7 @@ namespace FixPluginTypesSerialization.UnityPlayer
     public static class UseRightStructs
     {
         private static readonly Type[] InterfacesOfInterest;
-        private static readonly Dictionary<Type, List<(Version Version, object Handler)>> VersionedHandlers = new();
+        private static readonly Dictionary<Type, List<VersionedHandler>> VersionedHandlers = new();
         private static readonly Dictionary<Type, object> CurrentHandlers = new();
 
         private static Version _unityVersion;
@@ -43,9 +44,31 @@ namespace FixPluginTypesSerialization.UnityPlayer
             }
         }
 
+        public static int LabelMemStringId { get; private set; }
+
         private static void InitializeUnityVersion()
         {
-            if (TryInitializeUnityVersion(Process.GetCurrentProcess().MainModule.FileVersionInfo.FileVersion))
+            if (!Polyfills.StringIsNullOrWhiteSpace(Config.UnityVersionOverride.Value))
+            {
+                if (TryInitializeUnityVersion(Config.UnityVersionOverride.Value))
+                {
+                    Log.Debug($"Unity version obtained from config file");
+                    return;
+                }
+                Log.Error($"Unity version {Config.UnityVersionOverride.Value} has incorrect format.");
+            }
+
+            static bool IsUnityPlayer(ProcessModule p)
+            {
+                return p.ModuleName.ToLowerInvariant().Contains("unityplayer");
+            }
+
+            //exe doesn't always have correct version, trying to use UnityPlayer when available
+            var module = Process.GetCurrentProcess().Modules
+                .Cast<ProcessModule>()
+                .FirstOrDefault(IsUnityPlayer) ?? Process.GetCurrentProcess().MainModule;
+
+            if (TryInitializeUnityVersion(module.FileVersionInfo.FileVersion))
                 Log.Debug($"Unity version obtained from main application module.");
             else
                 Log.Error($"Running under default Unity version. UnityVersionHandler is not initialized.");
@@ -55,7 +78,7 @@ namespace FixPluginTypesSerialization.UnityPlayer
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(version))
+                if (Polyfills.StringIsNullOrWhiteSpace(version))
                     return false;
 
                 var parts = version.Split('.');
@@ -106,7 +129,7 @@ namespace FixPluginTypesSerialization.UnityPlayer
                     {
                         if (InterfacesOfInterest.Contains(i))
                         {
-                            VersionedHandlers[i].Add((Version.Parse(startVersion.StartVersion), instance));
+                            VersionedHandlers[i].Add(new VersionedHandler(Polyfills.VersionParse(startVersion.StartVersion), instance));
                         }
                     }
                 }
@@ -114,10 +137,11 @@ namespace FixPluginTypesSerialization.UnityPlayer
 
             foreach (var handlerList in VersionedHandlers.Values)
             {
-                handlerList.Sort((a, b) => -a.Version.CompareTo(b.Version));
+                handlerList.Sort((a, b) => -a.version.CompareTo(b.version));
             }
 
             GatherUnityVersionSpecificHandlers();
+            SetUnityVersionSpecificMemStringId();
         }
 
         private static void GatherUnityVersionSpecificHandlers()
@@ -171,6 +195,54 @@ namespace FixPluginTypesSerialization.UnityPlayer
             @struct.Pointer = ptr;
 
             return @struct;
+        }
+
+        private static void SetUnityVersionSpecificMemStringId()
+        {
+            if (UnityVersion >= new Version(2023, 1))
+            {
+                LabelMemStringId = 0x9;
+            }
+            else if (UnityVersion >= new Version(2021, 1))
+            {
+                LabelMemStringId = 0x49;
+            }
+            else if (UnityVersion >= new Version(2020, 2))
+            {
+                LabelMemStringId = 0x2B;
+            }
+            else if (UnityVersion >= new Version(2020, 1))
+            {
+                LabelMemStringId = 0x2A;
+            }
+            else if (UnityVersion >= new Version(2019, 4))
+            {
+                LabelMemStringId = 0x2B;
+            }
+            else if (UnityVersion >= new Version(2019, 3))
+            {
+                LabelMemStringId = 0x2A;
+            }
+            else if (UnityVersion >= new Version(2019, 1))
+            {
+                LabelMemStringId = 0x2B;
+            }
+            else if (UnityVersion >= new Version(2018, 3))
+            {
+                LabelMemStringId = 0x45;
+            }
+            else if (UnityVersion >= new Version(2017, 2))
+            {
+                LabelMemStringId = 0x44;
+            }
+            else if (UnityVersion >= new Version(2017, 1))
+            {
+                LabelMemStringId = 0x42;
+            }
+            else //5.0.0
+            {
+                LabelMemStringId = 0x3a;
+            }
         }
     }
 }

@@ -14,8 +14,11 @@ namespace FixPluginTypesSerialization
     {
         public static IEnumerable<string> TargetDLLs { get; } = new string[0];
 
-        public static List<string> PluginPaths =
-            Directory.GetFiles(BepInEx.Paths.PluginPath, "*.dll", SearchOption.AllDirectories).Where(f => IsNetAssembly(f)).ToList();
+        public static List<string> PluginPaths = 
+            Directory.GetFiles(BepInEx.Paths.PluginPath, "*.dll", SearchOption.AllDirectories)
+            .Where(f => IsNetAssembly(f))
+            .ToList();
+        public static List<string> PluginNames = PluginPaths.Select(p => Path.GetFileName(p)).ToList();
 
         public static bool IsNetAssembly(string fileName)
         {
@@ -58,8 +61,11 @@ namespace FixPluginTypesSerialization
         private static unsafe void DetourUnityPlayer()
         {
             var unityDllPath = Path.Combine(BepInEx.Paths.GameRootPath, "UnityPlayer.dll");
-
-            var pdbReader = new MiniPdbReader(unityDllPath);
+            //Older Unity builds had all functionality in .exe instead of UnityPlayer.dll
+            if (!File.Exists(unityDllPath))
+            {
+                unityDllPath = BepInEx.Paths.ExecutablePath;
+            }
 
             static bool IsUnityPlayer(ProcessModule p)
             {
@@ -70,15 +76,23 @@ namespace FixPluginTypesSerialization
                 .Cast<ProcessModule>()
                 .FirstOrDefault(IsUnityPlayer) ?? Process.GetCurrentProcess().MainModule;
 
+            var patternDiscoverer = new PatternDiscoverer(proc.BaseAddress, unityDllPath);
+            CommonUnityFunctions.Init(patternDiscoverer);
+
             var awakeFromLoadPatcher = new AwakeFromLoad();
             var isAssemblyCreatedPatcher = new IsAssemblyCreated();
-            var readStringFromFilePatcher = new ReadStringFromFile();
+            var isFileCreatedPatcher = new IsFileCreated();
             var scriptingManagerDeconstructorPatcher = new ScriptingManagerDeconstructor();
-
-            awakeFromLoadPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.MonoManagerAwakeFromLoadOffset);
-            isAssemblyCreatedPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.MonoManagerIsAssemblyCreatedOffset);
-            readStringFromFilePatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.ReadStringFromFileOffset);
-            scriptingManagerDeconstructorPatcher.Patch(proc.BaseAddress, proc.ModuleMemorySize, pdbReader, Config.ScriptingManagerDeconstructorOffset);
+            var convertSeparatorsToPlatformPatcher = new ConvertSeparatorsToPlatform();
+            
+            awakeFromLoadPatcher.Patch(patternDiscoverer, Config.MonoManagerAwakeFromLoadOffset);
+            isAssemblyCreatedPatcher.Patch(patternDiscoverer, Config.MonoManagerIsAssemblyCreatedOffset);
+            if (!IsAssemblyCreated.IsApplied)
+            {
+                isFileCreatedPatcher.Patch(patternDiscoverer, Config.IsFileCreatedOffset);
+            }
+            convertSeparatorsToPlatformPatcher.Patch(patternDiscoverer, Config.ConvertSeparatorsToPlatformOffset);
+            scriptingManagerDeconstructorPatcher.Patch(patternDiscoverer, Config.ScriptingManagerDeconstructorOffset);
         }
     }
 }
