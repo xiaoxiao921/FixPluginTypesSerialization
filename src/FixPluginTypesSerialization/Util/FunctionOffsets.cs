@@ -1199,6 +1199,8 @@ namespace FixPluginTypesSerialization.Util
                                     return CreateOffsets(0x776DF0, 0x776C10, 0x00, 0x78CB70, 0x68C400, 0x3573E0, 0x64E710, 0x1C25900);
                                 case 17:
                                     return CreateOffsets(0x776560, 0x776380, 0x00, 0x78C2E0, 0x68BC80, 0x3573F0, 0x64DF90, 0x1C248C0);
+                                case 21:
+                                    return CreateOffsets(0x77F8F0, 0x77F710, 0x00, 0x795690, 0x68D2E0, 0x358C80, 0x657840, 0x1C30940);
                             }
                             break;
                     }
