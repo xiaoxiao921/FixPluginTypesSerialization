@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30128.74
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35004.147
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FixPluginTypesSerialization", "src\FixPluginTypesSerialization\FixPluginTypesSerialization.csproj", "{29571930-F2E9-45DC-BB65-5B60C2B16850}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FixPluginTypesSerialization", "src\FixPluginTypesSerialization\FixPluginTypesSerialization.csproj", "{29571930-F2E9-45DC-BB65-5B60C2B16850}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdbDownload", "src\PdbDownload\PdbDownload.csproj", "{BDCFB8EB-1E18-4521-A0F3-56EA92CBB9B7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,18 @@ Global
 		{29571930-F2E9-45DC-BB65-5B60C2B16850}.Release|x64.Build.0 = Release|Any CPU
 		{29571930-F2E9-45DC-BB65-5B60C2B16850}.Release|x86.ActiveCfg = Release|Any CPU
 		{29571930-F2E9-45DC-BB65-5B60C2B16850}.Release|x86.Build.0 = Release|Any CPU
+		{BDCFB8EB-1E18-4521-A0F3-56EA92CBB9B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDCFB8EB-1E18-4521-A0F3-56EA92CBB9B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDCFB8EB-1E18-4521-A0F3-56EA92CBB9B7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{BDCFB8EB-1E18-4521-A0F3-56EA92CBB9B7}.Debug|x64.Build.0 = Debug|Any CPU
+		{BDCFB8EB-1E18-4521-A0F3-56EA92CBB9B7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BDCFB8EB-1E18-4521-A0F3-56EA92CBB9B7}.Debug|x86.Build.0 = Debug|Any CPU
+		{BDCFB8EB-1E18-4521-A0F3-56EA92CBB9B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDCFB8EB-1E18-4521-A0F3-56EA92CBB9B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BDCFB8EB-1E18-4521-A0F3-56EA92CBB9B7}.Release|x64.ActiveCfg = Release|Any CPU
+		{BDCFB8EB-1E18-4521-A0F3-56EA92CBB9B7}.Release|x64.Build.0 = Release|Any CPU
+		{BDCFB8EB-1E18-4521-A0F3-56EA92CBB9B7}.Release|x86.ActiveCfg = Release|Any CPU
+		{BDCFB8EB-1E18-4521-A0F3-56EA92CBB9B7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
