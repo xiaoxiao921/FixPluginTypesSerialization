@@ -1,22 +1,14 @@
 ﻿using Microsoft.Deployment.Compression.Cab;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
-#if NETSTANDARD2_0_OR_GREATER
-using System.Net.Http;
-using System.Threading.Tasks;
-#endif
+using System.Reflection;
 
 namespace FixPluginTypesSerialization.Util
 {
     internal class MiniPdbReader
     {
-#if NETSTANDARD2_0_OR_GREATER
-        private static readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromMinutes(5) };
-#else
-        private static readonly WebClientWithTimeout _webClient = new();
-#endif
         private readonly PeReader _peReader;
 
         private byte[] _pdbFile;
@@ -24,41 +16,6 @@ namespace FixPluginTypesSerialization.Util
         internal bool IsPdbAvailable;
 
         internal bool UseCache;
-
-        private static byte[] DownloadFromWeb(string url)
-        {
-            Log.Info("Downloading : " + url + "\nThis pdb file is needed for the plugin to work properly. This may take a while, relax, modding is coming.");
-#if NETSTANDARD2_0_OR_GREATER
-            try
-            {
-                var httpResponse = _httpClient.GetAsync(url).GetAwaiter().GetResult();
-
-                Log.Info("Status Code : " + httpResponse.StatusCode);
-
-                if (httpResponse.StatusCode != System.Net.HttpStatusCode.OK)
-                {
-                    return null;
-                }
-
-                return httpResponse.Content.ReadAsByteArrayAsync().GetAwaiter().GetResult();
-            }
-            catch (TaskCanceledException)
-            {
-                Log.Info("Could not download pdb. Plugin may not work correctly.");
-                return null;
-            }
-#else
-            try
-            {
-                return _webClient.DownloadData(url);
-        }
-            catch (WebException)
-            {
-                Log.Info("Could not download pdb. Plugin may not work correctly.");
-                return null;
-            }
-#endif
-        }
 
         internal MiniPdbReader(string targetFilePath)
         {
@@ -96,30 +53,47 @@ namespace FixPluginTypesSerialization.Util
 
         private bool DownloadUnityPdb(PeReader peReader)
         {
-            const string unitySymbolServer = "http://symbolserver.unity3d.com";
-
             var pdbCompressedPath = peReader.RsdsPdbFileName.TrimEnd('b') + '_';
-            var pdbDownloadUrl = $"{unitySymbolServer}/{peReader.RsdsPdbFileName}/{peReader.PdbGuid}/{pdbCompressedPath}";
+            var pdbDownloadUrl = $"{peReader.RsdsPdbFileName}/{peReader.PdbGuid}/{pdbCompressedPath}";
 
-            var compressedPdbCab = DownloadFromWeb(pdbDownloadUrl);
+            var tempPath = Path.GetTempPath();
+            var pdbCabPath = Path.Combine(tempPath, "pdb.cab");
 
-            if (compressedPdbCab != null)
+            var process = new Process
             {
-                var tempPath = Path.GetTempPath();
-
-                var pdbCabPath = Path.Combine(tempPath, "pdb.cab");
-
-                try
+                StartInfo = new ProcessStartInfo
                 {
-                    File.Delete(pdbCabPath);
-                }
-                catch (Exception)
+                    FileName = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "PdbDownload.exe"),
+                    Arguments = $"\"{pdbDownloadUrl}\" \"{pdbCabPath}\"",
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                },
+            };
+
+            process.OutputDataReceived += (s, e) =>
+            {
+                if (!string.IsNullOrEmpty(e.Data))
                 {
+                    Log.Info(e.Data);
                 }
+            };
+            process.ErrorDataReceived += (s, e) =>
+            {
+                if (!string.IsNullOrEmpty(e.Data))
+                {
+                    Log.Error(e.Data);
+                }
+            };
 
-                Log.Info("Writing the compressed pdb to " + pdbCabPath);
-                File.WriteAllBytes(pdbCabPath, compressedPdbCab);
+            var start = process.Start();
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+            process.WaitForExit();
 
+            if (File.Exists(pdbCabPath))
+            {
                 var cabInfo = new CabInfo(pdbCabPath);
 
                 Log.Info("Unpacking the compressed pdb");
@@ -165,19 +139,5 @@ namespace FixPluginTypesSerialization.Util
                 return new IntPtr(functionOffset);
             }
         }
-
-#if NET35 || NET40
-        private class WebClientWithTimeout : WebClient
-        {
-            public TimeSpan Timeout { get; set; } = TimeSpan.FromMinutes(5);
-
-            protected override WebRequest GetWebRequest(Uri address)
-            {
-                var request = base.GetWebRequest(address);
-                request.Timeout = (int)Timeout.TotalMilliseconds;
-                return request;
-            }
-        }
-#endif
     }
 }
