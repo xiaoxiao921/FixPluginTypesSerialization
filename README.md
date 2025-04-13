@@ -10,7 +10,7 @@ This solve a bug where custom Serializable structs and such stored in plugin ass
 
 ### Adding your own Unity version support
 
-This project only works with official releases of Unity 64 bit versions from 5.0.0 to 2023.2.5.
+This project only works with official releases of Unity 64 bit versions from 5.0.0 to 2023.2.20.
 
 If you want to add your own version, know that I don't have the free time and the will to investigate on how to help you, all I can provide is the text below.
 
