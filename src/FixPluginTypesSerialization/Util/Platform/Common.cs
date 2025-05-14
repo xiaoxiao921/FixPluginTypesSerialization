@@ -1,6 +1,6 @@
 using System;
 
-#if NETSTANDARD2_0
+#if NETSTANDARD
 using System.Runtime.InteropServices;
 #endif
 
@@ -10,7 +10,7 @@ public static class Common
 {
     public static bool DownloadBytes(string url, out byte[] data)
     {
-#if NETSTANDARD2_0
+#if NETSTANDARD
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             return Win32.DownloadFile(url, out data);
 

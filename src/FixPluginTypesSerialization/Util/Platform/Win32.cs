@@ -12,8 +12,8 @@ public static class Win32
     private static extern IntPtr InternetOpen(
         string lpszAgent,
         uint dwAccessType,
-        string? lpszProxyName,
-        string? lpszProxyBypass,
+        string lpszProxyName,
+        string lpszProxyBypass,
         uint dwFlags
     );
 
@@ -21,7 +21,7 @@ public static class Win32
     private static extern IntPtr InternetOpenUrl(
         IntPtr hInternet,
         string lpszUrl,
-        string? lpszHeaders,
+        string lpszHeaders,
         uint dwHeadersLength,
         uint dwFlags,
         uint dwContext
