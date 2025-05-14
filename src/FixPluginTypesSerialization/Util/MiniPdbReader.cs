@@ -1,9 +1,7 @@
 ﻿using Microsoft.Deployment.Compression.Cab;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 
 namespace FixPluginTypesSerialization.Util
 {
@@ -59,55 +57,24 @@ namespace FixPluginTypesSerialization.Util
             var tempPath = Path.GetTempPath();
             var pdbCabPath = Path.Combine(tempPath, "pdb.cab");
 
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "PdbDownload.exe"),
-                    Arguments = $"\"{pdbDownloadUrl}\" \"{pdbCabPath}\"",
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                },
-            };
+            if (!Platform.Common.DownloadBytes(pdbDownloadUrl, out var data))
+                return false;
 
-            process.OutputDataReceived += (s, e) =>
-            {
-                if (!string.IsNullOrEmpty(e.Data))
-                {
-                    Log.Info(e.Data);
-                }
-            };
-            process.ErrorDataReceived += (s, e) =>
-            {
-                if (!string.IsNullOrEmpty(e.Data))
-                {
-                    Log.Error(e.Data);
-                }
-            };
+            File.WriteAllBytes(pdbCabPath, data);
 
-            var start = process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-            process.WaitForExit();
+            var cabInfo = new CabInfo(pdbCabPath);
 
-            if (File.Exists(pdbCabPath))
-            {
-                var cabInfo = new CabInfo(pdbCabPath);
+            Log.Info("Unpacking the compressed pdb");
+            cabInfo.Unpack(tempPath);
 
-                Log.Info("Unpacking the compressed pdb");
-                cabInfo.Unpack(tempPath);
+            var pdbPath = Path.Combine(tempPath, peReader.RsdsPdbFileName);
 
-                var pdbPath = Path.Combine(tempPath, peReader.RsdsPdbFileName);
+            _pdbFile = File.ReadAllBytes(pdbPath);
 
-                _pdbFile = File.ReadAllBytes(pdbPath);
+            File.Delete(pdbCabPath);
+            File.Delete(pdbPath);
 
-                File.Delete(pdbCabPath);
-                File.Delete(pdbPath);
-            }
-
-            return _pdbFile != null;
+            return true;
         }
 
         internal unsafe IntPtr FindFunctionOffset(BytePattern[] bytePatterns)
