@@ -57,7 +57,7 @@ namespace FixPluginTypesSerialization.Util
             var tempPath = Path.GetTempPath();
             var pdbCabPath = Path.Combine(tempPath, "pdb.cab");
 
-            if (!Platform.Common.DownloadBytes(pdbDownloadUrl, out var data))
+            if (!Platform.Win32.DownloadFile(pdbDownloadUrl, out var data))
                 return false;
 
             File.WriteAllBytes(pdbCabPath, data);
