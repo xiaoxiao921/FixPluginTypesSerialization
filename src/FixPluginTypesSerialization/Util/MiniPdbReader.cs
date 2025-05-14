@@ -51,16 +51,16 @@ namespace FixPluginTypesSerialization.Util
 
         private bool DownloadUnityPdb(PeReader peReader)
         {
+            const string unitySymbolServer = "https://symbolserver.unity3d.com";
+            
             var pdbCompressedPath = peReader.RsdsPdbFileName.TrimEnd('b') + '_';
-            var pdbDownloadUrl = $"{peReader.RsdsPdbFileName}/{peReader.PdbGuid}/{pdbCompressedPath}";
+            var pdbDownloadUrl = $"{unitySymbolServer}/{peReader.RsdsPdbFileName}/{peReader.PdbGuid}/{pdbCompressedPath}";
 
             var tempPath = Path.GetTempPath();
             var pdbCabPath = Path.Combine(tempPath, "pdb.cab");
 
-            if (!Platform.Win32.DownloadFile(pdbDownloadUrl, out var data))
+            if (!Platform.Win32.DownloadFile(pdbDownloadUrl, pdbCabPath))
                 return false;
-
-            File.WriteAllBytes(pdbCabPath, data);
 
             var cabInfo = new CabInfo(pdbCabPath);
 
