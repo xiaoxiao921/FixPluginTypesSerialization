@@ -46,18 +46,8 @@ namespace FixPluginTypesSerialization.Patchers
 
         private static unsafe bool OnIsFileCreated(IntPtr str)
         {
-            string actualString;
-
-            if (UseRightStructs.IsFileCreatedRelative)
-            {
-                var assemblyString = UseRightStructs.GetStruct<IRelativePathString>(str);
-                actualString = assemblyString.ToStringAnsi();
-            }
-            else
-            {
-                var assemblyString = UseRightStructs.GetStruct<IAbsolutePathString>(str);
-                actualString = assemblyString.ToStringAnsi();
-            }
+            var assemblyString = UseRightStructs.GetStruct<IIsFileCreatedParam>(str);
+            var actualString = assemblyString.ToStringAnsi();
 
             if (actualString is not null && FixPluginTypesSerializationPatcher.PluginNames.Any(actualString.EndsWith))
             {

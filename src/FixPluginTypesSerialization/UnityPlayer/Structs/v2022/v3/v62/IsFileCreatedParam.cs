@@ -7,14 +7,14 @@ using System.Runtime.InteropServices;
 namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2022.v3.v62
 {
     [ApplicableToUnityVersionsSince("2022.3.62")]
-    public class RelativePathString : IRelativePathString
+    public class IsFileCreatedParam : IIsFileCreatedParam
     {
-        public RelativePathString()
+        public IsFileCreatedParam()
         {
 
         }
 
-        public RelativePathString(IntPtr pointer)
+        public IsFileCreatedParam(IntPtr pointer)
         {
             Pointer = pointer;
         }
@@ -23,7 +23,6 @@ namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2022.v3.v62
 
         private unsafe char* data => *(char**)Pointer;
         private unsafe ulong length => *(ulong*)(Pointer + (nint)0x8);
-        private unsafe ulong flags => *(ulong*)(Pointer + (nint)0x10);
 
         public unsafe string ToStringAnsi()
         {
