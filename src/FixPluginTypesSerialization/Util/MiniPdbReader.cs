@@ -1,9 +1,7 @@
 ﻿using Microsoft.Deployment.Compression.Cab;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 
 namespace FixPluginTypesSerialization.Util
 {
@@ -53,61 +51,56 @@ namespace FixPluginTypesSerialization.Util
 
         private bool DownloadUnityPdb(PeReader peReader)
         {
-            var pdbCompressedPath = peReader.RsdsPdbFileName.TrimEnd('b') + '_';
-            var pdbDownloadUrl = $"{peReader.RsdsPdbFileName}/{peReader.PdbGuid}/{pdbCompressedPath}";
+            // Attempt to download compressed pdb first, if that fails, we download the uncompressed version
+            if (DownloadUnityPdbCab(peReader))
+                return true;
+
+            var pdbDownloadUrl = $"{peReader.RsdsPdbFileName}/{peReader.PdbGuid}/{peReader.RsdsPdbFileName}";
 
             var tempPath = Path.GetTempPath();
-            var pdbCabPath = Path.Combine(tempPath, "pdb.cab");
+            var pdbCabPath = Path.Combine(tempPath, "UnityEngine.pdb");
 
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "PdbDownload.exe"),
-                    Arguments = $"\"{pdbDownloadUrl}\" \"{pdbCabPath}\"",
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                },
-            };
+            if (!Platform.Win32.DownloadUnitySymbolFile(pdbDownloadUrl, pdbCabPath))
+                return false;
 
-            process.OutputDataReceived += (s, e) =>
-            {
-                if (!string.IsNullOrEmpty(e.Data))
-                {
-                    Log.Info(e.Data);
-                }
-            };
-            process.ErrorDataReceived += (s, e) =>
-            {
-                if (!string.IsNullOrEmpty(e.Data))
-                {
-                    Log.Error(e.Data);
-                }
-            };
+            _pdbFile = File.ReadAllBytes(pdbCabPath);
 
-            var start = process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-            process.WaitForExit();
+            File.Delete(pdbCabPath);
 
-            if (File.Exists(pdbCabPath))
+            return true;
+        }
+
+        private bool DownloadUnityPdbCab(PeReader peReader)
+        {
+            try
             {
+                var pdbCompressedPath = peReader.RsdsPdbFileName.TrimEnd('b') + '_';
+                var pdbDownloadUrl = $"{peReader.RsdsPdbFileName}/{peReader.PdbGuid}/{pdbCompressedPath}";
+
+                var tempPath = Path.GetTempPath();
+                var pdbCabPath = Path.Combine(tempPath, "pdb.cab");
+
+                if (!Platform.Win32.DownloadUnitySymbolFile(pdbDownloadUrl, pdbCabPath))
+                    return false;
+
                 var cabInfo = new CabInfo(pdbCabPath);
 
                 Log.Info("Unpacking the compressed pdb");
                 cabInfo.Unpack(tempPath);
 
-                var pdbPath = Path.Combine(tempPath, peReader.RsdsPdbFileName);
+                var pdbPath = Path.Combine(tempPath, "pdb.cab");
 
-                _pdbFile = File.ReadAllBytes(pdbPath);
+                _pdbFile = File.ReadAllBytes(pdbCabPath);
 
                 File.Delete(pdbCabPath);
                 File.Delete(pdbPath);
-            }
 
-            return _pdbFile != null;
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         internal unsafe IntPtr FindFunctionOffset(BytePattern[] bytePatterns)

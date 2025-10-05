@@ -30,7 +30,7 @@ namespace FixPluginTypesSerialization.Patchers
             var hookPtr =
                 Marshal.GetFunctionPointerForDelegate(new IsFileCreatedDelegate(OnIsFileCreated));
 
-            _detour = new NativeDetour(from, hookPtr, new NativeDetourConfig {ManualApply = true});
+            _detour = new NativeDetour(from, hookPtr, new NativeDetourConfig { ManualApply = true });
 
             original = _detour.GenerateTrampoline<IsFileCreatedDelegate>();
             _detour.Apply();
@@ -46,7 +46,7 @@ namespace FixPluginTypesSerialization.Patchers
 
         private static unsafe bool OnIsFileCreated(IntPtr str)
         {
-            var assemblyString = UseRightStructs.GetStruct<IAbsolutePathString>(str);
+            var assemblyString = UseRightStructs.GetStruct<IIsFileCreatedParam>(str);
             var actualString = assemblyString.ToStringAnsi();
 
             if (actualString is not null && FixPluginTypesSerializationPatcher.PluginNames.Any(actualString.EndsWith))
