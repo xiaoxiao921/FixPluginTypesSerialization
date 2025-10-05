@@ -61,9 +61,11 @@ public static class Win32
     [DllImport("winhttp.dll", SetLastError = true)]
     private static extern bool WinHttpCloseHandle(IntPtr handle);
 
-    public static bool DownloadFile(string url, string filename)
+    private const string unitySymbolServer = "https://symbolserver.unity3d.com";
+
+    public static bool DownloadUnitySymbolFile(string url, string filename)
     {
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+        if (!Uri.TryCreate($"{unitySymbolServer}/{url}", UriKind.Absolute, out var uri))
             return false;
 
         var secure = uri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase);

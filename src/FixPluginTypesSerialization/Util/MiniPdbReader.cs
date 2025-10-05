@@ -51,30 +51,56 @@ namespace FixPluginTypesSerialization.Util
 
         private bool DownloadUnityPdb(PeReader peReader)
         {
-            const string unitySymbolServer = "https://symbolserver.unity3d.com";
-            
-            var pdbCompressedPath = peReader.RsdsPdbFileName.TrimEnd('b') + '_';
-            var pdbDownloadUrl = $"{unitySymbolServer}/{peReader.RsdsPdbFileName}/{peReader.PdbGuid}/{pdbCompressedPath}";
+            // Attempt to download compressed pdb first, if that fails, we download the uncompressed version
+            if (DownloadUnityPdbCab(peReader))
+                return true;
+
+            var pdbDownloadUrl = $"{peReader.RsdsPdbFileName}/{peReader.PdbGuid}/{peReader.RsdsPdbFileName}";
 
             var tempPath = Path.GetTempPath();
-            var pdbCabPath = Path.Combine(tempPath, "pdb.cab");
+            var pdbCabPath = Path.Combine(tempPath, "UnityEngine.pdb");
 
-            if (!Platform.Win32.DownloadFile(pdbDownloadUrl, pdbCabPath))
+            if (!Platform.Win32.DownloadUnitySymbolFile(pdbDownloadUrl, pdbCabPath))
                 return false;
 
-            var cabInfo = new CabInfo(pdbCabPath);
-
-            Log.Info("Unpacking the compressed pdb");
-            cabInfo.Unpack(tempPath);
-
-            var pdbPath = Path.Combine(tempPath, peReader.RsdsPdbFileName);
-
-            _pdbFile = File.ReadAllBytes(pdbPath);
+            _pdbFile = File.ReadAllBytes(pdbCabPath);
 
             File.Delete(pdbCabPath);
-            File.Delete(pdbPath);
 
             return true;
+        }
+
+        private bool DownloadUnityPdbCab(PeReader peReader)
+        {
+            try
+            {
+                var pdbCompressedPath = peReader.RsdsPdbFileName.TrimEnd('b') + '_';
+                var pdbDownloadUrl = $"{peReader.RsdsPdbFileName}/{peReader.PdbGuid}/{pdbCompressedPath}";
+
+                var tempPath = Path.GetTempPath();
+                var pdbCabPath = Path.Combine(tempPath, "pdb.cab");
+
+                if (!Platform.Win32.DownloadUnitySymbolFile(pdbDownloadUrl, pdbCabPath))
+                    return false;
+
+                var cabInfo = new CabInfo(pdbCabPath);
+
+                Log.Info("Unpacking the compressed pdb");
+                cabInfo.Unpack(tempPath);
+
+                var pdbPath = Path.Combine(tempPath, "pdb.cab");
+
+                _pdbFile = File.ReadAllBytes(pdbCabPath);
+
+                File.Delete(pdbCabPath);
+                File.Delete(pdbPath);
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         internal unsafe IntPtr FindFunctionOffset(BytePattern[] bytePatterns)
