@@ -45,6 +45,7 @@ namespace FixPluginTypesSerialization.UnityPlayer
         }
 
         public static int LabelMemStringId { get; private set; }
+        public static bool IsFileCreatedRelative { get; private set; }
 
         private static void InitializeUnityVersion()
         {
@@ -142,6 +143,7 @@ namespace FixPluginTypesSerialization.UnityPlayer
 
             GatherUnityVersionSpecificHandlers();
             SetUnityVersionSpecificMemStringId();
+            SetIsFileCreatedRelativeOrAbsolute();
         }
 
         private static void GatherUnityVersionSpecificHandlers()
@@ -242,6 +244,21 @@ namespace FixPluginTypesSerialization.UnityPlayer
             else //5.0.0
             {
                 LabelMemStringId = 0x3a;
+            }
+        }
+
+        private static void SetIsFileCreatedRelativeOrAbsolute()
+        {
+            // Default value is false for older versions
+            // So far I have only observed this behavior in 2022.3.62
+            // I am assuming 2023+ uses StringStorageDefault and AbsolutePathString
+            if (UnityVersion >= new Version(2022, 3, 62))
+            {
+                IsFileCreatedRelative = true;
+            }
+            else if (UnityVersion >= new Version(2023, 0))
+            {
+                IsFileCreatedRelative = false;
             }
         }
     }
