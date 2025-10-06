@@ -68,7 +68,7 @@ namespace FixPluginTypesSerialization.UnityPlayer
                 .Cast<ProcessModule>()
                 .FirstOrDefault(IsUnityPlayer) ?? Process.GetCurrentProcess().MainModule;
 
-            if (TryInitializeUnityVersion(module.FileVersionInfo.FileVersion))
+            if (TryInitializeUnityVersion(module.FileVersionInfo.ProductVersion))
                 Log.Debug($"Unity version obtained from main application module.");
             else
                 Log.Error($"Running under default Unity version. UnityVersionHandler is not initialized.");
@@ -81,17 +81,35 @@ namespace FixPluginTypesSerialization.UnityPlayer
                 if (Polyfills.StringIsNullOrWhiteSpace(version))
                     return false;
 
+                version = version.Split(' ')[0];
+
                 var parts = version.Split('.');
                 var major = 0;
                 var minor = 0;
                 var build = 0;
+                var revision = 0;
 
                 // Issue #229 - Don't use Version.Parse("2019.4.16.14703470L&ProductVersion")
                 bool success = int.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out major);
                 if (success && parts.Length > 1)
                     success = int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out minor);
                 if (success && parts.Length > 2)
-                    success = int.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out build);
+                {
+                    var buildPart = parts[2];
+
+                    // Find stream
+                    var i = 0;
+                    while (i < buildPart.Length && char.IsDigit(buildPart[i]))
+                        i++;
+
+                    if (i == 0 || !int.TryParse(buildPart.Substring(0, i), NumberStyles.Integer,
+                            CultureInfo.InvariantCulture, out build))
+                        success = false;
+
+                    if (success)
+                        success = int.TryParse(buildPart.Substring(i + 1), NumberStyles.Integer,
+                            CultureInfo.InvariantCulture, out revision);
+                }
 
                 if (!success)
                 {
@@ -99,7 +117,7 @@ namespace FixPluginTypesSerialization.UnityPlayer
                     return false;
                 }
 
-                _unityVersion = new Version(major, minor, build);
+                _unityVersion = new Version(major, minor, build, revision);
                 Log.Info($"Running under Unity v{UnityVersion}");
                 return true;
             }
