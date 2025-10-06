@@ -3,6 +3,7 @@ using FixPluginTypesSerialization.UnityPlayer.Structs.Default;
 
 namespace FixPluginTypesSerialization.UnityPlayer.Structs.v5.v0
 {
+    [ApplicableToUnityVersionsSince("3.4.0")]
     public class IsFileCreatedParam : IIsFileCreatedParam
     {
         public IsFileCreatedParam()

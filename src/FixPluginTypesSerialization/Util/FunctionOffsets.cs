@@ -520,6 +520,8 @@ namespace FixPluginTypesSerialization.Util
                                     return CreateOffsets(0x8B7400, 0x8BD180, 0x00, 0x8C58A0, 0x8208B0, 0x5C7700, 0x5C76D0, 0x00);
                                 case 14:
                                     return CreateOffsets(0x8B7800, 0x8BD580, 0x00, 0x8C5D20, 0x820CB0, 0x5C7AF0, 0x5C7AC0, 0x00);
+                                case 15:
+                                    return CreateOffsets(0x8B7440, 0x8BD030, 0x00, 0x8C5720, 0x820CF0, 0x5C7AF0, 0x5C7AC0, 0x00);
                             }
                             break;
                         case 2:
@@ -569,6 +571,8 @@ namespace FixPluginTypesSerialization.Util
                                     return CreateOffsets(0x86E4D0, 0x874270, 0x00, 0x87C970, 0x7D3390, 0x5796C0, 0x579690, 0x00);
                                 case 21:
                                     return CreateOffsets(0x86E4D0, 0x874270, 0x00, 0x87C970, 0x7D3390, 0x5796C0, 0x579690, 0x00);
+                                case 23:
+                                    return CreateOffsets(0x86E110, 0x873D20, 0x00, 0x87C370, 0x7D33D0, 0x5796C0, 0x579690, 0x00);
                             }
                             break;
                         case 3:
@@ -606,6 +610,8 @@ namespace FixPluginTypesSerialization.Util
                                     return CreateOffsets(0x8A07A0, 0x8A3670, 0x00, 0x8A88B0, 0x7FBBA0, 0x57D8E0, 0x57D880, 0x00);
                                 case 15:
                                     return CreateOffsets(0x8A3300, 0x8A61D0, 0x00, 0x8AB410, 0x7FE6C0, 0x57F8B0, 0x57F850, 0x00);
+                                case 17:
+                                    return CreateOffsets(0x8A3600, 0x8A6390, 0x00, 0x8AB560, 0x7FEDC0, 0x57FA20, 0x57F9C0, 0x00);
                             }
                             break;
                         case 4:
@@ -693,6 +699,8 @@ namespace FixPluginTypesSerialization.Util
                                     return CreateOffsets(0x8C3C40, 0x8C6B10, 0x00, 0x8CB7E0, 0x81C5D0, 0x594A00, 0x5949A0, 0x00);
                                 case 40:
                                     return CreateOffsets(0x8C4000, 0x8C6ED0, 0x00, 0x8CBBA0, 0x81C980, 0x594D40, 0x594CE0, 0x00);
+                                case 41:
+                                    return CreateOffsets(0x8C3C40, 0x8C69D0, 0x00, 0x8CB630, 0x81C9C0, 0x594D40, 0x594CE0, 0x00);
                             }
                             break;
                     }
@@ -739,6 +747,8 @@ namespace FixPluginTypesSerialization.Util
                                     return CreateOffsets(0x8302D0, 0x8332A0, 0x00, 0x837C00, 0x781270, 0x511170, 0x511110, 0x00);
                                 case 17:
                                     return CreateOffsets(0x830440, 0x833410, 0x00, 0x837D70, 0x7813E0, 0x511230, 0x5111D0, 0x00);
+                                case 18:
+                                    return CreateOffsets(0x830480, 0x833260, 0x00, 0x837B80, 0x781420, 0x511230, 0x5111D0, 0x00);
                             }
                             break;
                         case 2:
@@ -760,6 +770,8 @@ namespace FixPluginTypesSerialization.Util
                                     return CreateOffsets(0x8ADAA0, 0x8B12C0, 0x00, 0x8B6550, 0x7FAD80, 0x56B870, 0x56B810, 0x1977780);
                                 case 7:
                                     return CreateOffsets(0x8AE1B0, 0x8B19D0, 0x00, 0x8B6C60, 0x7FB490, 0x56BE10, 0x56BDB0, 0x1978880);
+                                case 8:
+                                    return CreateOffsets(0x8AE1F0, 0x8B17D0, 0x00, 0x8B6A10, 0x7FB4D0, 0x56BE10, 0x56BDB0, 0x1978880);
                             }
                             break;
                         case 3:
@@ -863,6 +875,8 @@ namespace FixPluginTypesSerialization.Util
                                     return CreateOffsets(0x890E70, 0x894780, 0x00, 0x899840, 0x7D9D10, 0x53FC40, 0x53FBE0, 0x19BD800);
                                 case 48:
                                     return CreateOffsets(0x891B30, 0x895440, 0x00, 0x89A500, 0x7DAA90, 0x540680, 0x540620, 0x19BD800);
+                                case 49:
+                                    return CreateOffsets(0x891B70, 0x895270, 0x00, 0x89A2E0, 0x7DAAD0, 0x540680, 0x540620, 0x19BD800);
                             }
                             break;
                     }
@@ -929,6 +943,8 @@ namespace FixPluginTypesSerialization.Util
                                     return CreateOffsets(0x89BCD0, 0x89F010, 0x00, 0x8A3D90, 0x7E8E60, 0x55C200, 0x55C1A0, 0x1956C40);
                                 case 28:
                                     return CreateOffsets(0x89BBE0, 0x89EF20, 0x00, 0x8A3CA0, 0x7E8D30, 0x55C060, 0x55C000, 0x1956C40);
+                                case 29:
+                                    return CreateOffsets(0x89BC20, 0x89ED00, 0x00, 0x8A3A40, 0x7E8D70, 0x55C060, 0x55C000, 0x1956C40);
                             }
                             break;
                         case 2:
@@ -974,6 +990,8 @@ namespace FixPluginTypesSerialization.Util
                                     return CreateOffsets(0x65BA30, 0x65F390, 0x00, 0x665420, 0x58CD10, 0x2BE800, 0x2BE7B0, 0x1A0F100);
                                 case 19:
                                     return CreateOffsets(0x65BAB0, 0x65F410, 0x00, 0x6654A0, 0x58CD90, 0x2BE930, 0x2BE8E0, 0x1A0F100);
+                                case 20:
+                                    return CreateOffsets(0x65BAF0, 0x00, 0x586F10, 0x6652B0, 0x58CDD0, 0x2BE930, 0x2BE8E0, 0x1A0F100);
                             }
                             break;
                         case 3:
@@ -1070,7 +1088,14 @@ namespace FixPluginTypesSerialization.Util
                                 case 44:
                                     return CreateOffsets(0x62D4E0, 0x630E10, 0x00, 0x63EDA0, 0x55A210, 0x27A790, 0x27A740, 0x1A9BC00);
                                 case 45:
-                                    return CreateOffsets(0x62D510, 0x630E40, 0x00, 0x63EDD0, 0x55A240, 0x27A790, 0x27A740, 0x1A9CC00);
+                                    switch (unityVersion.Revision)
+                                    {
+                                        case 43167: // f1
+                                            return CreateOffsets(0x62D510, 0x630E40, 0x00, 0x63EDD0, 0x55A240, 0x27A790, 0x27A740, 0x1A9CC00);
+                                        case 63631: // f2
+                                            return CreateOffsets(0x62D560, 0x00, 0x554320, 0x63EC50, 0x55A290, 0x27A790, 0x27A740, 0x1A9CC00);
+                                    }
+                                    break;
                                 case 46:
                                     return CreateOffsets(0x62D510, 0x630E40, 0x00, 0x63EDD0, 0x55A240, 0x27A790, 0x27A740, 0x1AB6C00);
                                 case 47:
@@ -1141,6 +1166,8 @@ namespace FixPluginTypesSerialization.Util
                                     return CreateOffsets(0x67E1A0, 0x681A50, 0x00, 0x68FB00, 0x5A9280, 0x2C4C70, 0x2C4C20, 0x1A77F80);
                                 case 24:
                                     return CreateOffsets(0x67E710, 0x681FC0, 0x00, 0x690070, 0x5A9780, 0x2C4C70, 0x2C4C20, 0x1A75F80);
+                                case 25:
+                                    return CreateOffsets(0x67E750, 0x00, 0x5A38C0, 0x68FF00, 0x5A97C0, 0x2C4C70, 0x2C4C20, 0x1A75F80);
                             }
                             break;
                         case 2:
@@ -1190,6 +1217,8 @@ namespace FixPluginTypesSerialization.Util
                                     return CreateOffsets(0x77AED0, 0x77AA00, 0x00, 0x78F9D0, 0x692050, 0x367A90, 0x6576A0, 0x1BF0280);
                                 case 21:
                                     return CreateOffsets(0x77B8B0, 0x77B3E0, 0x00, 0x7903B0, 0x692AC0, 0x367BA0, 0x658110, 0x1BF02C0);
+                                case 23:
+                                    return CreateOffsets(0x77BFC0, 0x00, 0x687F20, 0x7907E0, 0x692DE0, 0x367C20, 0x658210, 0x1BF1300);
                             }
                             break;
                         case 3:
@@ -1373,6 +1402,8 @@ namespace FixPluginTypesSerialization.Util
                                     return CreateOffsets(0x6833E0, 0x6831C0, 0x00, 0x699280, 0x599150, 0x25B410, 0x53DB90, 0x1B59D40);
                                 case 20:
                                     return CreateOffsets(0x682F30, 0x682D10, 0x00, 0x698CB0, 0x599670, 0x25C770, 0x53E0E0, 0x1B5DD40);
+                                case 22:
+                                    return CreateOffsets(0x682F40, 0x00, 0x58E810, 0x698950, 0x5996A0, 0x25C770, 0x53E110, 0x1B5CD40);
                             }
                             break;
                         case 2:
@@ -1420,6 +1451,8 @@ namespace FixPluginTypesSerialization.Util
                                     return CreateOffsets(0x6BB2F0, 0x6BB0B0, 0x00, 0x6CD6B0, 0x5CCD20, 0x278EB0, 0x278F70, 0x1BFE340);
                                 case 20:
                                     return CreateOffsets(0x6BADD0, 0x6BAB90, 0x00, 0x6CD190, 0x5CC7F0, 0x278F80, 0x279040, 0x1C00340);
+                                case 22:
+                                    return CreateOffsets(0x6BABE0, 0x00, 0x5C1FA0, 0x6CCD90, 0x5CC830, 0x278F80, 0x279040, 0x1BFF340);
                             }
                             break;
                     }

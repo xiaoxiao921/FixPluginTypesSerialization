@@ -4,9 +4,9 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2022.v3.v62
+namespace FixPluginTypesSerialization.UnityPlayer.Structs.v2021.v2
 {
-    [ApplicableToUnityVersionsSince("2022.3.62")]
+    [ApplicableToUnityVersionsSince("2021.2.0")]
     public class IsFileCreatedParam : IIsFileCreatedParam
     {
         public IsFileCreatedParam()

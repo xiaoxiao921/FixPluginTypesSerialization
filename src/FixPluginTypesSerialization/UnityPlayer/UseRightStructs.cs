@@ -85,6 +85,7 @@ namespace FixPluginTypesSerialization.UnityPlayer
                 var major = 0;
                 var minor = 0;
                 var build = 0;
+                var revision = 0;
 
                 // Issue #229 - Don't use Version.Parse("2019.4.16.14703470L&ProductVersion")
                 bool success = int.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out major);
@@ -92,6 +93,8 @@ namespace FixPluginTypesSerialization.UnityPlayer
                     success = int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out minor);
                 if (success && parts.Length > 2)
                     success = int.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out build);
+                if (success && parts.Length > 3)
+                    success = int.TryParse(parts[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out revision);
 
                 if (!success)
                 {
@@ -99,7 +102,7 @@ namespace FixPluginTypesSerialization.UnityPlayer
                     return false;
                 }
 
-                _unityVersion = new Version(major, minor, build);
+                _unityVersion = new Version(major, minor, build, revision);
                 Log.Info($"Running under Unity v{UnityVersion}");
                 return true;
             }
