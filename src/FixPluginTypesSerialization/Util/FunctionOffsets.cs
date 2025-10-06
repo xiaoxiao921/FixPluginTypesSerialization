@@ -1090,9 +1090,9 @@ namespace FixPluginTypesSerialization.Util
                                 case 45:
                                     switch (unityVersion.Revision)
                                     {
-                                        case 1:
+                                        case 43167: // f1
                                             return CreateOffsets(0x62D510, 0x630E40, 0x00, 0x63EDD0, 0x55A240, 0x27A790, 0x27A740, 0x1A9CC00);
-                                        case 2:
+                                        case 63631: // f2
                                             return CreateOffsets(0x62D560, 0x00, 0x554320, 0x63EC50, 0x55A290, 0x27A790, 0x27A740, 0x1A9CC00);
                                     }
                                     break;
