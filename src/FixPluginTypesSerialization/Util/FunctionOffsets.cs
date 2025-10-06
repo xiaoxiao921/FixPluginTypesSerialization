@@ -1373,6 +1373,9 @@ namespace FixPluginTypesSerialization.Util
                                     return CreateOffsets(0x6833E0, 0x6831C0, 0x00, 0x699280, 0x599150, 0x25B410, 0x53DB90, 0x1B59D40);
                                 case 20:
                                     return CreateOffsets(0x682F30, 0x682D10, 0x00, 0x698CB0, 0x599670, 0x25C770, 0x53E0E0, 0x1B5DD40);
+                                // 21 just doesn't exist?
+                                // case 22: Not present on Unity's symbol server...
+                                //     return CreateOffsets()
                             }
                             break;
                         case 2:
